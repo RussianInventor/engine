@@ -1,7 +1,8 @@
 from common.game import Game
 from server.server import Server
+from server.config import Config
 import threading
-server = Server("localhost", 5000)
+server = Server(Config.host, Config.port)
 game = Game(None, None)
 
 server_thread = threading.Thread(target=server.listen)
