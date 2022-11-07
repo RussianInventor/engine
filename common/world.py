@@ -11,7 +11,6 @@ class Storable:
         obj = vars(model)[self.__class__.__name__]()
 
 
-
 class Chunk(Storable):
     w = 100
     h = 100
