@@ -1,7 +1,9 @@
 import queue
+import time
 import pygame
-import game_utils
-import world
+from common import game_utils
+from common import world
+from client import config
 
 
 class Player:
@@ -41,8 +43,34 @@ class Moving:
 
 class I(Object, Moving):
     def __init__(self, x, y):
-        super(Object).__init__(x, y, w=10, h =10)
+        super(Object).__init__(x, y, w=10, h=10)
         super(Moving).__init__(v=1)
+
+
+class Pygame:
+    def __init__(self, game):
+        self.screen = None
+        self.game = game
+
+    def start(self):
+        pygame.init()
+        self.screen = pygame.display.set_mode((500, 500))
+        while True:
+            self.update()
+
+    def check_key(self, key_code):
+        command = self.game.keyboard.get_key(key_code)
+        if command is not None:
+            command()
+
+    def update(self):
+        start_time = time.time()
+        for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                self.check_key(event.key)
+            if event.type == pygame.QUIT:
+                exit("1+1=1")
+        pygame.display.update()
 
 
 class Game:
@@ -52,7 +80,11 @@ class Game:
         self.world = world
         self.players = players
         self.events = queue.PriorityQueue()
-        self.message = queue.PriorityQueue()
+        self.messages = queue.PriorityQueue()
+        self.keyboard = config.Keyboard()
+
+    def update_pygame(self):
+        pass
 
     def update(self):
         while True:

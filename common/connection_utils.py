@@ -16,5 +16,5 @@ def read_message(connection):
             pass
         else:
             break
-    print(f'get: {message}')
+    #print(f'get: {message}')
     return message

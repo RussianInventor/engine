@@ -1,5 +1,5 @@
 import json
-import model
+from common import model
 
 
 class Storable:

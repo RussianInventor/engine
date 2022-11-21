@@ -4,7 +4,7 @@ import threading
 import time
 import uuid
 from common.connection_utils import read_message
-
+import queue
 
 
 class Client:
@@ -22,6 +22,12 @@ class Client:
         self.to_server = None
         self.from_server = None
 
+    def set_from_queue(self, queue: queue.PriorityQueue):
+        self.from_server = queue
+
+    def set_to_queue(self, queue: queue.PriorityQueue):
+        self.to_server = queue
+
     def send(self, message):
         self.sending_socket.send(message.encode("UTF-8"))
         print(f'send: {message}')
@@ -37,11 +43,10 @@ class Client:
     def wait_connection(self):
         print('run listening')
         self.listening_socket.listen()
-        while True:
-            self.input_connection, _ = self.listening_socket.accept()
-            self.send(json.dumps({"success": True}))
-            self.listening_thread = threading.Thread(target=self.listen)
-            self.listening_thread.start()
+        self.input_connection, _ = self.listening_socket.accept()
+        #self.send(json.dumps({"success": True}))
+        self.listening_thread = threading.Thread(target=self.listen)
+        self.listening_thread.start()
 
     def listen(self):
         while True:
@@ -53,3 +58,4 @@ class Client:
             if not self.to_server.empty():
                 msg = self.to_server.get()
                 self.send(json.dumps(msg))
+
