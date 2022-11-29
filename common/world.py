@@ -42,11 +42,3 @@ class World(Storable):
             self.day_time = "day"
         elif 1800 <= self.time < 2400:
             self.day_time = "evening"
-
-
-world = World()
-
-while True:
-    print(world.time, world.day_time)
-    world.time_steps()
-    #world.write()

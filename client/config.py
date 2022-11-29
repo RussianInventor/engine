@@ -22,3 +22,6 @@ class Config:
 
     server_host = os.environ.get('SERVER_HOST')
     server_port = int(os.environ.get('SERVER_PORT'))
+
+    FPS = 30
+    frame_duration = 1/FPS

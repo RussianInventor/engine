@@ -4,6 +4,7 @@ import pygame
 from common import game_utils
 from common import world
 from client import config
+from server.config import Config
 
 
 class Player:
@@ -72,11 +73,15 @@ class Pygame:
                 exit("1+1=1")
         pygame.display.update()
 
+        duration = time.time() - start_time
+        if duration < config.Config.frame_duration:
+            time.sleep(config.Config.frame_duration - duration)
+
 
 class Game:
     EVENTS_UPDATE_LIMIT = 100
 
-    def __init__(self, players, world:world.World):
+    def __init__(self, players, world: world.World):
         self.world = world
         self.players = players
         self.events = queue.PriorityQueue()
@@ -87,6 +92,7 @@ class Game:
         pass
 
     def update(self):
+        start_time = time.time()
         while True:
             for _ in range(0, self.EVENTS_UPDATE_LIMIT):
                 if self.events.empty():
@@ -96,4 +102,6 @@ class Game:
             for chunk in self.world.chunks:
                 for creature in chunk.creatures:
                     print(creature.x, creature.y)
-
+            duration = time.time() - start_time
+            if duration < Config.tick_duration:
+                time.sleep(Config.tick_duration - duration)

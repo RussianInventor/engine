@@ -34,7 +34,10 @@ class Client:
 
     def connect(self):
         self.sending_socket.connect((self.host, self.port))
-        message = {"title": "connect", "content": {"client_id": self.id, "port": self.listening_port}}
+        message = {"title": "connect",
+                   "content":
+                       {"client_id": self.id,
+                        "port": self.listening_port}}
         self.send(json.dumps(message))
         response = self.sending_socket.recv(1024)
         print(response.decode("utf-8"))
@@ -47,6 +50,12 @@ class Client:
         #self.send(json.dumps({"success": True}))
         self.listening_thread = threading.Thread(target=self.listen)
         self.listening_thread.start()
+
+    def start_game(self):
+        message = {"title": "start",
+                   "content":
+                       {"world_id": None,
+                        "new": True}}
 
     def listen(self):
         while True:

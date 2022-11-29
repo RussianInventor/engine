@@ -20,5 +20,7 @@ client_thread = threading.Thread(target=client.connect)
 game_thread = threading.Thread(target=game.update)
 interface_thread = threading.Thread(target=interface.start)
 client_thread.start()
+client.start_game()
+
 game_thread.start()
 interface_thread.start()

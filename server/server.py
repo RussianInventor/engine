@@ -4,10 +4,13 @@ import queue
 from common.events import Event
 from common.connection_utils import read_message
 import threading
+from common.game import Game
+from common.world import World
 
 
 class Client:
-    def __init__(self, address, input_connection, listen_port, server):
+    def __init__(self, id, address, input_connection, listen_port, server):
+        self.id = id
         self.address = address
         self.listen_port = listen_port
         self.server = server
@@ -30,6 +33,7 @@ class Server:
         self.socket.bind((host, port))
         self.socket.listen(self.backlog)
         self.clients = {}
+        self.game = None
 
     def set_from_queue(self, queue: queue.PriorityQueue):
         self.from_client = queue
@@ -51,7 +55,8 @@ class Server:
         if message["title"] == "connect":
             print(f'get connection message from {address}')
             self.send(connection=connection, msg=json.dumps({"success": True}))
-            self.clients[message['content']['client_id']] = Client(address=address,
+            self.clients[message['content']['client_id']] = Client(id=message['content']['client_id'],
+                                                                   address=address,
                                                                    input_connection=connection,
                                                                    listen_port=message['content']['port'],
                                                                    server=self)
@@ -65,9 +70,24 @@ class Server:
         message = read_message(client.input_connection)
         print('message: ', message)
 
+        if message["title"] == "start":
+            self.run_game(world_id=message['content']['world_id'],
+                          player_id=client.id,
+                          new=message["title"]['new'])
+
         if message["title"] == "event":
             self.create_event(message)
             self.send(connection=client.input_connection, msg=json.dumps({"success": True}))
+
+    def run_game(self, player_id, new, world_id=None):
+        if new:
+            world = World()
+        else:
+            # TODO load world from db by id
+            world = None
+        self.game = Game(players=[player_id],
+                         world=world)
+        threading.Thread(target=self.game.update).start()
 
     def create_event(self, message):
         self.from_client.put((message['time'], Event(**message)))
