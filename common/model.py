@@ -14,6 +14,8 @@ class World(Base):
     __tablename__ = 'worlds'
     id = Column(TEXT, primary_key=True)
     type = Column(TEXT, ForeignKey(WorldType.type))
+    owner = Column(TEXT)
+    private = Column(BOOLEAN)
 
     def __init__(self, id):
         for key, val in locals().items():
@@ -37,3 +39,5 @@ class Object(Base):
     id = Column(TEXT, primary_key=True)
     world_id = Column(TEXT, ForeignKey(World.id))
     data = Column(JSON)
+    cls = Column(TEXT)
+

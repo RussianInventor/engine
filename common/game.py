@@ -70,7 +70,7 @@ class Pygame:
             if event.type == pygame.KEYDOWN:
                 self.check_key(event.key)
             if event.type == pygame.QUIT:
-                exit("1+1=1")
+                exit()
         pygame.display.update()
 
         duration = time.time() - start_time
@@ -80,7 +80,6 @@ class Pygame:
 
 class Game:
     EVENTS_UPDATE_LIMIT = 100
-
     def __init__(self, players, world: world.World):
         self.world = world
         self.players = players

@@ -1,5 +1,8 @@
 import json
 from common import model
+from sqlalchemy import and_
+import game_objects
+from common.config import Config
 
 
 class Storable:
@@ -12,21 +15,54 @@ class Storable:
 
 
 class Chunk(Storable):
-    w = 100
-    h = 100
+    w = Config.CHUNK_SIZE
+    h = Config.CHUNK_SIZE
 
     def __init__(self):
         self.creatures = []
         self.items = []
 
+    @classmethod
+    def from_db(cls, chunk):
+        return cls()
+
+    def add_obj(self, obj):
+        if isinstance(obj, game_objects.Item):
+            self.items.append(obj)
+        else:
+            self.creatures.append(obj)
+
 
 class World(Storable):
-    def __init__(self):
+    def __init__(self, type):
         self.chunks = []
         self.time = 0
         self.max_day_time = 2400
         self.day = 0
         self.day_time = None
+        self.type = type
+
+    @classmethod
+    def from_db(cls, session, world_id):
+        world = session.query(model.World).filter(model.World.id == world_id).first()
+        new_world = cls(world.type)
+        y = 0
+        while True:
+            chunks = session.query(model.Chunk).filter(and_(model.Chunk.world_id == world_id,
+                                                            model.Chunk.y == y)).order_by(model.Chunk.x.asc()).all()
+            if not chunks:
+                break
+            new_world.chunks.append([])
+            for chunk in chunks:
+                new_world.chunks[-1].append(Chunk.from_db(chunk))
+        objs = session.query(model.Object).filter(model.Object.world_id == world_id).all()
+        clses = vars(game_objects)
+        for obj in objs:
+            cur_cls = clses[obj.cls]
+            g_obj = cur_cls.from_json(obj.data)
+            x, y = g_obj.chunk_indexes()
+            new_world.chunks[y][x].add_obj(obj)
+        return new_world
 
     def time_steps(self):
         self.time += 1

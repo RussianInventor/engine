@@ -1,5 +1,11 @@
 import json
 
+CONNECT = "connect"
+GET_WORLD = "get_world"
+RUN_GAME = "run_game"
+CREATE_WORLD = "create_world"
+WORLD_LIST = "world_list"
+
 
 class Message:
     def __init__(self, title: str, time: float, content: dict, author: str, receiver: str):
