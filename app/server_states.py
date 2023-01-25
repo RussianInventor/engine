@@ -1,7 +1,7 @@
 import time
 from abc import ABC, abstractmethod
 import messages
-from common import model, game
+from common import model, game, world
 from sqlalchemy.orm import Session
 from server.data_base import engine
 from sqlalchemy import and_, or_
@@ -24,7 +24,8 @@ class IdleState(State):
     def handle_messages(self):
         message = self.app.input_messages.get()
         if message.title == messages.RUN_GAME:
-            self.app.game = game.Game([message.autor], )
+            with new_session() as session:
+                self.app.game = game.Game([message.autor], world.World.from_db(session, message.content["world_id"]))
         if message.title == messages.GET_WORLD:
             with new_session() as session:
                 q = session.query(model.World)
@@ -40,12 +41,12 @@ class IdleState(State):
                                           receiver=message.author)
                 self.app.send_message(message.author, answer)
         if message.title == messages.CREATE_WORLD:
-            world = model.World(message.content["id"])
-            world.type = message.content["type"]
-            world.owner = message.content["owner"]
-            world.private = message.content["private"]
+            new_world = model.World(message.content["id"])
+            new_world.type = message.content["type"]
+            new_world.owner = message.content["owner"]
+            new_world.private = message.content["private"]
             with new_session() as session:
-                session.add(world)
+                session.add(new_world)
                 session.commit()
 
 

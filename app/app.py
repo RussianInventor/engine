@@ -46,14 +46,15 @@ class Connection:
 
 
 class App:
-    def __init__(self):
+    def __init__(self, id):
         self.connections = {}
         self.game = None
+        self.id = id
         self.input_messages = queue.PriorityQueue()
         self.output_messages = queue.PriorityQueue()
 
-    def send_message(self, connection_id, message):
-        connection = self.connections.get(connection_id)
+    def send_message(self, message):
+        connection = self.connections.get(message.receiver)
         connection.send(message)
 
     def read_message(self, connection_id) -> Message:
@@ -65,8 +66,8 @@ class Server(App):
     port_num = 4000
     backlog = 10
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, id):
+        super().__init__(id)
         self.main_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.listening_thread = threading.Thread(target=self.listen)
 
