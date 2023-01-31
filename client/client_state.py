@@ -1,12 +1,17 @@
 import time
 from abc import ABC
 from app import messages
-
+from app.app import Client
 
 
 class State(ABC):
-    def __init__(self, app):
+    def __init__(self, app: Client):
         self.app = app
+
+
+class InitState(State):
+    def connect(self, host, port, name, listening_port):
+        self.app.connect(host=host, port=port, name=name, listening_port=listening_port)
 
 
 class IdleState(State):
@@ -25,6 +30,7 @@ class IdleState(State):
                                        author=self.app.id,
                                        receiver="server")
         self.app.send_message(new_message)
+
     def create_world(self, world):
         new_message = messages.Message(title=messages.CREATE_WORLD,
                                        time=time.time(),
@@ -35,3 +41,8 @@ class IdleState(State):
                                        author=self.app.id,
                                        receiver="server")
         self.app.send_message(new_message)
+
+
+class GamingState(State):
+    pass
+

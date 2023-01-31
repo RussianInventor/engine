@@ -52,6 +52,7 @@ class App:
         self.id = id
         self.input_messages = queue.PriorityQueue()
         self.output_messages = queue.PriorityQueue()
+        self.state = None
 
     def send_message(self, message):
         connection = self.connections.get(message.receiver)
@@ -60,6 +61,9 @@ class App:
     def read_message(self, connection_id) -> Message:
         connection = self.connections.get(connection_id)
         return connection.read()
+
+    def set_state(self, state_cls):
+        self.state = state_cls(self)
 
 
 class Server(App):
