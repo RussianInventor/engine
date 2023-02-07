@@ -3,8 +3,7 @@ import json
 import queue
 import threading
 import time
-
-from messages import Message
+from .messages import Message
 
 
 def read(sock):
