@@ -1,7 +1,7 @@
 import json
 from common import model
 from sqlalchemy import and_
-import game_objects
+from . import game_objects
 from common.config import Config
 
 

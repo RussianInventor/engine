@@ -19,7 +19,7 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
 
     def connect(self):
         host = self.hostEntry.text()
-        port = self.portEntry.text()
+        port = int(self.portEntry.text())
         self.client.connect(host, port, Config.id, Config.port)
 
 
