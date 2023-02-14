@@ -1,29 +1,30 @@
 import subprocess
+from app.app import Client
+from client.config import Config
 subprocess.call(("pyuic5",
-                 "untitled.ui",
+                 "client/untitled.ui",
                  "-o",
-                 "design.py"))
+                 "client/design.py"))
 import sys
 from PyQt5 import QtWidgets
-import design
+from . import design
 
 
-class ExampleApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
-    def __init__(self):
+class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
+    def __init__(self, client: Client):
         super().__init__()
         self.setupUi(self)
         self.connectButton.clicked.connect(self.connect)
+        self.client = client
 
     def connect(self):
         host = self.hostEntry.text()
         port = self.portEntry.text()
-        print(host, port)
+        self.client.connect(host, port, Config.id, Config.port)
 
-def main():
+
+def run_interface(client):
     app = QtWidgets.QApplication(sys.argv)
-    window = ExampleApp()
+    window = InterApp(client)
     window.show()
     app.exec_()
-
-if __name__ == '__main__':\
-    main()
