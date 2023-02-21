@@ -105,13 +105,16 @@ class Client(App):
         self.connections['server'] = conn
 
     def connect(self, host, port, name, listening_port):
-        self.connection = Connection(id=name,
-                                     listening_port=listening_port,
-                                     address=(host, port))
-        self.connection.send(Message(title='connect',
-                                     time=time.time(),
-                                     content={'port': self.connection.listening_socket.getsockname()[1]},
-                                     author=name,
-                                     receiver='server'))
-
+        try:
+            self.connection = Connection(id=name,
+                                         listening_port=listening_port,
+                                         address=(host, port))
+            self.connection.send(Message(title='connect',
+                                         time=time.time(),
+                                         content={'port': self.connection.listening_socket.getsockname()[1]},
+                                         author=name,
+                                         receiver='server'))
+            return True
+        except ConnectionRefusedError:
+            return False
 # conn = Connection('999', 5555, ('localhost', 4444))
