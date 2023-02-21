@@ -23,13 +23,14 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         if self.client.connect(host, port, Config.id, Config.port):
             self.show_idle_frame()
         else:
-            QtWidgets.QMessageBox(title="CONNECTION ERROR", text="проверьте адрес сервера и порт")
+            QtWidgets.QMessageBox(self, text="Проверьте адрес сервера и порт").show()
 
     def show_connection_frame(self):
         self.idle_frame.hide()
         self.connection_frame.show()
 
     def show_idle_frame(self):
+        self.client.
         self.connection_frame.hide()
         self.idle_frame.show()
 

@@ -26,7 +26,7 @@ class IdleState(State):
     def get_world(self, world_id):
         new_message = messages.Message(title=messages.GET_WORLD,
                                        time=time.time(),
-                                       content={"world_id": world_id},
+                                       content={},
                                        author=self.app.id,
                                        receiver="server")
         self.app.send_message(new_message)
