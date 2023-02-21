@@ -31,6 +31,8 @@ class Server:
         self.from_client = None
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.bind((host, port))
+        self.host = host
+        self.port = port
         self.socket.listen(self.backlog)
         self.clients = {}
         self.game = None
@@ -93,7 +95,7 @@ class Server:
         self.from_client.put((message['time'], Event(**message)))
 
     def listen(self):
-        print('run listening')
+        print(f'run server at {self.host}:{self.port}')
         while True:
             try:
                 connection, address = self.socket.accept()

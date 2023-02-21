@@ -21,10 +21,20 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         host = self.hostEntry.text()
         port = int(self.portEntry.text())
         self.client.connect(host, port, Config.id, Config.port)
+        self.show_idle_frame()
+
+    def show_connection_frame(self):
+        self.idle_frame.hide()
+        self.connection_frame.show()
+
+    def show_idle_frame(self):
+        self.connection_frame.hide()
+        self.idle_frame.show()
 
 
 def run_interface(client):
     app = QtWidgets.QApplication(sys.argv)
     window = InterApp(client)
     window.show()
+    window.show_connection_frame()
     app.exec_()
