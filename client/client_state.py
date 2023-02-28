@@ -8,6 +8,10 @@ class State(ABC):
     def __init__(self, app: Client):
         self.app = app
 
+    def execute(self, function_name, kwargs):
+        getattr(self, function_name)(**kwargs)
+
+
 
 class InitState(State):
     def connect(self, host, port, name, listening_port):

@@ -1,6 +1,7 @@
 import subprocess
 from app.app import Client
 from client.config import Config
+from .client_state import IdleState
 subprocess.call(("pyuic5",
                  "client/untitled.ui",
                  "-o",
@@ -22,6 +23,7 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         port = int(self.portEntry.text())
         if self.client.connect(host, port, Config.id, Config.port):
             self.show_idle_frame()
+            self.client.set_state(IdleState)
         else:
             QtWidgets.QMessageBox(self, text="Проверьте адрес сервера и порт").show()
 
@@ -30,7 +32,6 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.connection_frame.show()
 
     def show_idle_frame(self):
-        self.client.
         self.connection_frame.hide()
         self.idle_frame.show()
 
