@@ -29,10 +29,13 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
 
     def show_connection_frame(self):
         self.idle_frame.hide()
+        self.
         self.connection_frame.show()
 
     def show_idle_frame(self):
         self.connection_frame.hide()
+        for world in self.client.state.execute("get_world"):
+            self.world_selection.addItem(text=world.name, userData=world.id)
         self.idle_frame.show()
 
 

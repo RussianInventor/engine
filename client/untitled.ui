@@ -42,7 +42,7 @@
       <cursorShape>ArrowCursor</cursorShape>
      </property>
      <property name="title">
-      <string>Server connection</string>
+      <string>Подключение к серверу</string>
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -73,7 +73,7 @@
        <item row="2" column="1">
         <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Port:</string>
+          <string>Порт:</string>
          </property>
         </widget>
        </item>
@@ -90,7 +90,7 @@
           <cursorShape>ArrowCursor</cursorShape>
          </property>
          <property name="text">
-          <string>Connect</string>
+          <string>Подключиться</string>
          </property>
         </widget>
        </item>
@@ -110,7 +110,7 @@
        <item row="2" column="0">
         <widget class="QLabel" name="label">
          <property name="text">
-          <string>Host:</string>
+          <string>Хост:</string>
          </property>
         </widget>
        </item>
@@ -144,7 +144,7 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
       <item row="3" column="0" colspan="2">
-       <widget class="QPushButton" name="cleate_button">
+       <widget class="QPushButton" name="create_button_2">
         <property name="text">
          <string>Создать мир</string>
         </property>
@@ -161,10 +161,72 @@
        <widget class="QComboBox" name="world_selection">
         <item>
          <property name="text">
-          <string>New world</string>
+          <string>Новый мир</string>
          </property>
         </item>
        </widget>
+      </item>
+     </layout>
+    </widget>
+   </widget>
+   <widget class="QFrame" name="world_frame">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>140</y>
+      <width>201</width>
+      <height>211</height>
+     </rect>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+    <widget class="QWidget" name="gridLayoutWidget_3">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>185</width>
+       <height>191</height>
+      </rect>
+     </property>
+     <layout class="QGridLayout" name="gridLayout_3">
+      <item row="7" column="1">
+       <widget class="QCheckBox" name="world_private">
+        <property name="text">
+         <string>Приватный</string>
+        </property>
+       </widget>
+      </item>
+      <item row="9" column="1">
+       <widget class="QPushButton" name="create_button2">
+        <property name="text">
+         <string>Создать</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string>Тип</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Имя</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QLineEdit" name="world_name"/>
+      </item>
+      <item row="3" column="1">
+       <widget class="QLineEdit" name="world_type"/>
       </item>
      </layout>
     </widget>

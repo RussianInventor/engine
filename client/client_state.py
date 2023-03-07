@@ -8,8 +8,10 @@ class State(ABC):
     def __init__(self, app: Client):
         self.app = app
 
-    def execute(self, function_name, kwargs):
-        getattr(self, function_name)(**kwargs)
+    def execute(self, function_name, kwargs=None):
+        if kwargs is None:
+            kwargs = {}
+        return getattr(self, function_name)(**kwargs)
 
 
 
@@ -27,7 +29,7 @@ class IdleState(State):
                                        receiver="server")
         self.app.send_message(new_message)
 
-    def get_world(self, world_id):
+    def get_world(self):
         new_message = messages.Message(title=messages.GET_WORLD,
                                        time=time.time(),
                                        content={},

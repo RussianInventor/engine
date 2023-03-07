@@ -16,6 +16,7 @@ class World(Base):
     type = Column(TEXT, ForeignKey(WorldType.type))
     owner = Column(TEXT)
     private = Column(BOOLEAN)
+    name = Column(TEXT)
 
     def __init__(self, id):
         for key, val in locals().items():

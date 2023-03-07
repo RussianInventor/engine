@@ -6,6 +6,7 @@ import time
 from .messages import Message
 
 
+
 def read(sock):
     data = bytearray()
     while True:
