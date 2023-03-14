@@ -19,7 +19,7 @@ class Keyboard:
 class Config:
     host = os.environ.get('CLIENT_HOST')
     port = int(os.environ.get('CLIENT_PORT'))
-    id = int(os.environ.get('CLIENT_ID'))
+    id = os.environ.get('CLIENT_ID')
 
     server_host = os.environ.get('SERVER_HOST')
     server_port = int(os.environ.get('SERVER_PORT'))

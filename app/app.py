@@ -22,7 +22,8 @@ def read(sock):
             pass
         else:
             break
-    return Message(**message.items())
+    print(message)
+    return Message(connection=sock, **message)
 
 
 class Connection:
@@ -57,6 +58,8 @@ class App:
     def send_message(self, message):
         connection = self.connections.get(message.receiver)
         connection.send(message)
+        answer = read(connection.sending_socket)
+        return answer
 
     def read_message(self, connection_id) -> Message:
         connection = self.connections.get(connection_id)
@@ -110,7 +113,8 @@ class Client(App):
             self.connection = Connection(id=name,
                                          listening_port=listening_port,
                                          address=(host, port))
-            self.connection.send(Message(title='connect',
+            self.connection.send(Message(connection=self.connection,
+                                         title='connect',
                                          time=time.time(),
                                          content={'port': self.connection.listening_socket.getsockname()[1]},
                                          author=name,

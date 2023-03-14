@@ -32,14 +32,8 @@ class IdleState(State):
                 q = q.filter(or_(model.World.private == False,
                                  model.World.owner == message.author))
                 worlds = q.all()
-                answer = messages.Message(title=messages.WORLD_LIST,
-                                          time=time.time(),
-                                          content={
-                                              "worlds": [{c.name: i.__getattribute__(c.name) for c in i.__table__.c} for
-                                                         i in worlds]},
-                                          author="server",
-                                          receiver=message.author)
-                self.app.send_message(message.author, answer)
+                message.answer(content={"worlds": [{c.name: i.__getattribute__(c.name) for c in i.__table__.c} for i in worlds]})
+                # self.app.send_message(message.author, answer)
         if message.title == messages.CREATE_WORLD:
             new_world = model.World(message.content["id"])
             new_world.type = message.content["type"]
@@ -48,7 +42,7 @@ class IdleState(State):
             with new_session() as session:
                 session.add(new_world)
                 session.commit()
-            self.app.send_message(message.author)
+            message.answer(content={c.name: new_world.__getattribute__(c.name) for c in new_world.__table__.c})
 
 
 class GamingState(State):

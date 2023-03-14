@@ -21,7 +21,8 @@ class InitState(State):
 
 class IdleState(State):
     def run_game(self, world_id):
-        new_message = messages.Message(title=messages.RUN_GAME,
+        new_message = messages.Message(connection=self.app.connection,
+                                       title=messages.RUN_GAME,
                                        time=time.time(),
                                        content={"world_id": world_id},
                                        author=self.app.id,
@@ -29,7 +30,8 @@ class IdleState(State):
         self.app.send_message(new_message)
 
     def get_world(self):
-        new_message = messages.Message(title=messages.GET_WORLD,
+        new_message = messages.Message(connection=self.app.connection,
+                                       title=messages.GET_WORLD,
                                        time=time.time(),
                                        content={},
                                        author=self.app.id,
@@ -37,16 +39,17 @@ class IdleState(State):
         self.app.send_message(new_message)
 
     def create_world(self, name, type, private, owner):
-        new_message = messages.Message(title=messages.CREATE_WORLD,
+        new_message = messages.Message(connection=self.app.connection,
+                                       title=messages.CREATE_WORLD,
                                        time=time.time(),
                                        content={"type": type,
                                                 "owner": owner,
                                                 "private": private,
-                                                "name":name},
-                                       author=self.app.id,
+                                                "name": name},
+                                       author=owner,
                                        receiver="server")
-        self.app.send_message(new_message)
-
+        answer = self.app.send_message(new_message)
+        print('>>>>>>>>>>>>>>>', answer)
 
 class GamingState(State):
     pass
