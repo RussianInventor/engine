@@ -144,7 +144,7 @@
      </property>
      <layout class="QGridLayout" name="gridLayout_2">
       <item row="3" column="0" colspan="2">
-       <widget class="QPushButton" name="create_button_2">
+       <widget class="QPushButton" name="new_world">
         <property name="text">
          <string>Создать мир</string>
         </property>
@@ -202,7 +202,7 @@
        </widget>
       </item>
       <item row="9" column="1">
-       <widget class="QPushButton" name="create_button2">
+       <widget class="QPushButton" name="create_button">
         <property name="text">
          <string>Создать</string>
         </property>

@@ -2,6 +2,7 @@ import subprocess
 from app.app import Client
 from client.config import Config
 from .client_state import IdleState
+
 subprocess.call(("pyuic5",
                  "client/untitled.ui",
                  "-o",
@@ -15,9 +16,14 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
     def __init__(self, client: Client):
         super().__init__()
         self.setupUi(self)
-        self.connectButton.clicked.connect(self.connect)
-        self.create_button_2.clicked.connect(lambda: self.show_frame('world_frame'))
         self.client = client
+        self.connectButton.clicked.connect(self.connect)
+        self.new_world.clicked.connect(lambda: self.show_frame('world_frame'))
+        self.create_button.clicked.connect(lambda: self.client.state.execute("create_world",
+                                                                             {"name": self.world_name.text(),
+                                                                              "type": self.world_type.text(),
+                                                                              "private": self.world_private.checkState(),
+                                                                              "owner": Config.id}))
 
     def connect(self):
         host = self.hostEntry.text()

@@ -3,7 +3,6 @@ from abc import ABC
 from app import messages
 from app.app import Client
 
-
 class State(ABC):
     def __init__(self, app: Client):
         self.app = app
@@ -37,13 +36,13 @@ class IdleState(State):
                                        receiver="server")
         self.app.send_message(new_message)
 
-    def create_world(self, world):
+    def create_world(self, name, type, private, owner):
         new_message = messages.Message(title=messages.CREATE_WORLD,
                                        time=time.time(),
-                                       content={"id": world.id,
-                                                "type": world.type,
-                                                "owner": world.owner,
-                                                "private": world.private},
+                                       content={"type": type,
+                                                "owner": owner,
+                                                "private": private,
+                                                "name":name},
                                        author=self.app.id,
                                        receiver="server")
         self.app.send_message(new_message)

@@ -48,6 +48,7 @@ class IdleState(State):
             with new_session() as session:
                 session.add(new_world)
                 session.commit()
+            self.app.send_message(message.author)
 
 
 class GamingState(State):
