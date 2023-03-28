@@ -1,3 +1,4 @@
+import logging
 import socket
 import json
 import threading
@@ -21,6 +22,7 @@ class Client:
         self.listening_socket.bind(('localhost', self.listening_port))
         self.to_server = None
         self.from_server = None
+        logging.info("что угодно")
 
     def set_from_queue(self, queue: queue.PriorityQueue):
         self.from_server = queue

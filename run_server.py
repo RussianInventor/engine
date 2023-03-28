@@ -1,7 +1,9 @@
+import logging
 from common.game import Game
 from server.server import Server
 from server.config import Config
 import threading
+log = logging.getLogger("server")
 server = Server(Config.host, Config.port)
 # game = Game(None, None)
 
