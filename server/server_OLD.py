@@ -1,3 +1,4 @@
+import logging
 import socket
 import json
 import queue
@@ -36,6 +37,7 @@ class Server:
         self.socket.listen(self.backlog)
         self.clients = {}
         self.game = None
+        logging.info('server created')
 
     def set_from_queue(self, queue: queue.PriorityQueue):
         self.from_client = queue
@@ -51,6 +53,7 @@ class Server:
                     client.input_connection.send(json.dumps(msg))
 
     def handle_connection(self, connection, address):
+        logging.info('handle connection')
         message = read_message(connection)
         print('message: ', message)
 
