@@ -1,3 +1,4 @@
+import logging
 import socket
 import json
 import queue
@@ -92,7 +93,7 @@ class Server(App):
     def __init__(self, id, port):
         super().__init__(id)
         self.main_port = port
-        self.receivers = {}  # {client_id: (host, port), ...} - receivers for world updates, server sends, they listen
+        self.receivers = {}  # {client_id: socket, ...} - receivers for world updates, server sends, they listen
         self.connections = {}  # {client_id: socket, ...} - both-ways connections
 
         self.listening_thread = threading.Thread(target=self.listen)
@@ -117,7 +118,7 @@ class Server(App):
     def new_connection(self, sock, address):
         msg = read(sock)
         if isinstance(msg, Message) and msg.type == MessageType.CONNECT:
-            client_id = msg.content.get("author")
+            client_id = msg.author
             self.connections[client_id] = sock
             self.receivers[client_id] = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.receivers[client_id].connect(address[0], msg.content.get("port"))
@@ -129,18 +130,27 @@ class Server(App):
 class Client(App):
     def __init__(self, id, port):
         super().__init__(id)
+        self.listening_port = port
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.listening_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     def listen(self):
-        self.listening_socket
+        self.listening_socket.bind(self.listening_port)
+        self.listen()
+        try:
+            conn, address = self.listening_port.accept()
+            self.listening_socket = conn
+            logging.info(f'input connection from {address}')
+        except Exception as err:
+            logging.error(err.with_traceback(None))
+
     def connect(self, host, port, name, listening_port):
         try:
             self.connection.connect((host, port))
             self.connection.send(Message(connection=self.connection,
                                          title='connect',
                                          time=time.time(),
-                                         content={'port': self.connection.listening_socket.getsockname()[1]},
+                                         content={'port': self.listening_socket.getsockname()[1]},
                                          author=name,
                                          receiver='server'))
             return True
