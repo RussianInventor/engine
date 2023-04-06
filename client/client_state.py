@@ -1,7 +1,7 @@
 import time
 from abc import ABC
-from app import messages
-from app.app import Client
+from common.app import messages
+from common.app.app import Client
 
 class State(ABC):
     def __init__(self, app: Client):

@@ -1,5 +1,5 @@
 import subprocess
-from app.app import Client
+from common.app.app import Client
 from client.config import Config
 from .client_state import IdleState
 

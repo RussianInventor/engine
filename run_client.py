@@ -1,4 +1,4 @@
-from app.app import Client
+from common.app.app import Client
 import uuid
 from client import client_state
 from client.interface import run_interface

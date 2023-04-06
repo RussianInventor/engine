@@ -3,8 +3,13 @@ import json
 import queue
 import threading
 import time
-from .messages import Message
+from .messages import Message, MessageType
 
+
+class User:
+
+    def __init__(self, user_id):
+        self.user_id = user_id
 
 
 def read(sock):
@@ -23,7 +28,10 @@ def read(sock):
         else:
             break
     print(message)
-    return Message(connection=sock, **message)
+    if 'title' in message.keys():
+        return Message(connection=sock, **message)
+    else:
+        return message
 
 
 class Connection:
@@ -37,6 +45,8 @@ class Connection:
         self.sending_socket.connect(address)
 
         print(self.listening_socket.getsockname())
+        print(self.sending_socket.getsockname())
+        self.listen()
 
     def send(self, msg):
         self.sending_socket.send(msg.json().encode('utf-8'))
@@ -45,15 +55,21 @@ class Connection:
         msg = read(self.listening_socket)
         return msg
 
+    def listen(self):
+        self.listening_socket.listen()
+        addr, conn = self.listening_socket.accept()
+
 
 class App:
-    def __init__(self, id):
+    def __init__(self, user_id):
         self.connections = {}
-        self.game = None
-        self.id = id
+        self.state = None
+
         self.input_messages = queue.PriorityQueue()
         self.output_messages = queue.PriorityQueue()
-        self.state = None
+
+        self.game = None
+        self.user = User(user_id)
 
     def send_message(self, message):
         connection = self.connections.get(message.receiver)
@@ -73,46 +89,54 @@ class Server(App):
     port_num = 4000
     backlog = 10
 
-    def __init__(self, id):
+    def __init__(self, id, port):
         super().__init__(id)
-        self.main_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.listening_thread = threading.Thread(target=self.listen)
+        self.main_port = port
+        self.receivers = {}  # {client_id: (host, port), ...} - receivers for world updates, server sends, they listen
+        self.connections = {}  # {client_id: socket, ...} - both-ways connections
 
-    def run(self, server_port):
-        self.main_socket.bind(('localhost', server_port))
-        self.listening_thread.run()
+        self.listening_thread = threading.Thread(target=self.listen)
+        # self.broadcasting_thread = threading.Thread(target=self.broadcast)
 
     def listen(self):
-        self.main_socket.listen(self.backlog)
+        main_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        main_socket.bind(('localhost', self.main_port))
+        main_socket.listen(self.backlog)
         while True:
             try:
-                sock, address = self.main_socket.accept()
+                sock, address = main_socket.accept()
                 self.new_connection(sock, address)
             except Exception as error:
                 print(error)
 
+    def listen_clients(self):
+        for client_id, conn in self.connections.items():
+            msg = read(conn.listening_socket)
+            print(f'get msg from {client_id}: {msg}')
+
     def new_connection(self, sock, address):
         msg = read(sock)
-        if msg.title == "connect":
-            self.connections[msg.author] = Connection(id=msg.author,
-                                                      listening_port=self.port_num + len(self.connections.keys()),
-                                                      address=(address[0], msg.content['port']))
+        if isinstance(msg, Message) and msg.type == MessageType.CONNECT:
+            client_id = msg.content.get("author")
+            self.connections[client_id] = sock
+            self.receivers[client_id] = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.receivers[client_id].connect(address[0], msg.content.get("port"))
+        else:
+            print('fail')
+            pass
 
 
 class Client(App):
-    @property
-    def connection(self):
-        return self.connections['server']
+    def __init__(self, id, port):
+        super().__init__(id)
+        self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.listening_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    @connection.setter
-    def connection(self, conn):
-        self.connections['server'] = conn
-
+    def listen(self):
+        self.listening_socket
     def connect(self, host, port, name, listening_port):
         try:
-            self.connection = Connection(id=name,
-                                         listening_port=listening_port,
-                                         address=(host, port))
+            self.connection.connect((host, port))
             self.connection.send(Message(connection=self.connection,
                                          title='connect',
                                          time=time.time(),
@@ -120,6 +144,6 @@ class Client(App):
                                          author=name,
                                          receiver='server'))
             return True
-        except ConnectionRefusedError:
+        except ConnectionRefusedError as err:
+            print(err)
             return False
-# conn = Connection('999', 5555, ('localhost', 4444))

@@ -1,10 +1,9 @@
-import time
 from abc import ABC, abstractmethod
-import messages
+from common.app import messages
 from common import model, game, world
 from sqlalchemy.orm import Session
-from server.data_base import engine
-from sqlalchemy import and_, or_
+from common.data_base import engine
+from sqlalchemy import or_
 
 
 def new_session():
@@ -23,6 +22,7 @@ class State(ABC):
 class IdleState(State):
     def handle_messages(self):
         message = self.app.input_messages.get()
+        print(f'handle message: {message.title}: {message.content}')
         if message.title == messages.RUN_GAME:
             with new_session() as session:
                 self.app.game = game.Game([message.autor], world.World.from_db(session, message.content["world_id"]))
