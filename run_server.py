@@ -19,7 +19,6 @@ client_thread = threading.Thread(target=server.listen_clients)
 # server.set_from_queue(game.events)
 
 server_thread.start()
-print('run client thread')
 client_thread.start()
 
 # game_thread.start()

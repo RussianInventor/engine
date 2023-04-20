@@ -4,6 +4,7 @@ import json
 import queue
 import threading
 import time
+from abc import ABC, abstractmethod
 from .messages import Message, MessageType
 
 
@@ -50,7 +51,7 @@ class Connection:
         self.listen()
 
     def send(self, msg):
-        self.sending_socket.send(msg.json().encode('utf-8'))
+        self.sending_socket.send(msg.json().encode('utf- 8'))
 
     def read(self):
         msg = read(self.listening_socket)
@@ -61,7 +62,7 @@ class Connection:
         addr, conn = self.listening_socket.accept()
 
 
-class App:
+class App(ABC):
     def __init__(self, user_id):
         self.connections = {}
         self.state = None
@@ -72,10 +73,14 @@ class App:
         self.game = None
         self.user = User(user_id)
 
-    def send_message(self, message):
-        connection = self.connections.get(message.receiver)
-        connection.send(message)
-        answer = read(connection.sending_socket)
+    @abstractmethod
+    def get_sending_socket(self, receiver):
+        pass
+
+    def send_message(self, message: Message):
+        connection = self.get_sending_socket(message.receiver)
+        connection.send(message.json().encode('utf- 8'))
+        answer = read(connection)
         return answer
 
     def read_message(self, connection_id) -> Message:
@@ -99,13 +104,18 @@ class Server(App):
         self.listening_thread = threading.Thread(target=self.listen)
         # self.broadcasting_thread = threading.Thread(target=self.broadcast)
 
+    def get_sending_socket(self, receiver):
+        return self.connections.get(receiver)
+
     def listen(self):
         main_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         main_socket.bind(('localhost', self.main_port))
+        logging.debug(f'listen on port {self.main_port}...')
         main_socket.listen(self.backlog)
         while True:
             try:
                 sock, address = main_socket.accept()
+                logging.debug(f'accept {address}')
                 self.new_connection(sock, address)
             except Exception as error:
                 print(error)
@@ -118,10 +128,12 @@ class Server(App):
     def new_connection(self, sock, address):
         msg = read(sock)
         if isinstance(msg, Message) and msg.type == MessageType.CONNECT:
+            logging.info(f'new connection from {address}')
             client_id = msg.author
             self.connections[client_id] = sock
             self.receivers[client_id] = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.receivers[client_id].connect(address[0], msg.content.get("port"))
+            logging.debug(f'try to connect to {address[0]}:{msg.content.get("port")}')
+            self.receivers[client_id].connect((address[0], msg.content.get("port")))
         else:
             print('fail')
             pass
@@ -134,26 +146,37 @@ class Client(App):
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.listening_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+    def get_sending_socket(self, receiver=None):
+        return self.connection
+
     def listen(self):
-        self.listening_socket.bind(self.listening_port)
-        self.listen()
+        logging.info('start listening...')
+        self.listening_socket.bind(('localhost', self.listening_port))
+        self.listening_socket.listen()
         try:
-            conn, address = self.listening_port.accept()
-            self.listening_socket = conn
+            conn, address = self.listening_socket.accept()
             logging.info(f'input connection from {address}')
         except Exception as err:
             logging.error(err.with_traceback(None))
+            return
+        self.listening_socket.close()
+        self.listening_socket = conn
 
     def connect(self, host, port, name, listening_port):
+        logging.info(f'connecting to {host}:{port}...')
+        listening_thread = threading.Thread(target=self.listen)
+        listening_thread.start()
         try:
             self.connection.connect((host, port))
             self.connection.send(Message(connection=self.connection,
                                          title='connect',
                                          time=time.time(),
-                                         content={'port': self.listening_socket.getsockname()[1]},
+                                         content={'port': self.listening_port},
                                          author=name,
-                                         receiver='server'))
-            return True
+                                         receiver='server').json().encode('utf- 8'))
+            result = True
         except ConnectionRefusedError as err:
             print(err)
-            return False
+            result = False
+        listening_thread.join()
+        return result

@@ -4,7 +4,7 @@ import logging
 from client import client_state
 from client.interface import run_interface
 
-logging.basicConfig(format="%(pathname)s \t %(message)s")
+logging.basicConfig(format="%(pathname)s %(lineno)s:\t%(message)s")
 log = logging.getLogger()
 log.addHandler(logging.FileHandler("log/client.log"))
 log.setLevel(logging.DEBUG)
