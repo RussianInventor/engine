@@ -4,7 +4,9 @@ from common.app.app import Server
 from server.config import Config
 import threading
 
-logging.basicConfig(format="%(pathname)s \t %(message)s")
+f = open("log/server.log", mode="w")
+f.close()
+logging.basicConfig(format="%(pathname)s \t %(message)s", filemode="w")
 log = logging.getLogger()
 log.addHandler(logging.FileHandler("log/server.log"))
 log.setLevel(logging.DEBUG)

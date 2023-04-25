@@ -80,7 +80,7 @@
        <item row="3" column="1">
         <widget class="QLineEdit" name="portEntry">
          <property name="text">
-          <string>4000</string>
+          <string>4444</string>
          </property>
         </widget>
        </item>
@@ -199,6 +199,9 @@
         <property name="text">
          <string>Приватный</string>
         </property>
+        <property name="checked">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
       <item row="9" column="1">
@@ -223,10 +226,18 @@
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QLineEdit" name="world_name"/>
+       <widget class="QLineEdit" name="world_name">
+        <property name="text">
+         <string>ftr</string>
+        </property>
+       </widget>
       </item>
       <item row="3" column="1">
-       <widget class="QLineEdit" name="world_type"/>
+       <widget class="QLineEdit" name="world_type">
+        <property name="text">
+         <string>fyfurd</string>
+        </property>
+       </widget>
       </item>
      </layout>
     </widget>

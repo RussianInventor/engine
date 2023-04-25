@@ -121,9 +121,10 @@ class Server(App):
                 print(error)
 
     def listen_clients(self):
-        for client_id, conn in self.connections.items():
-            msg = read(conn.listening_socket)
-            print(f'get msg from {client_id}: {msg}')
+        while True:
+            for client_id, conn in self.connections.items():
+                msg = read(conn)
+                logging.info(f'get msg from {client_id}: {msg}')
 
     def new_connection(self, sock, address):
         msg = read(sock)
