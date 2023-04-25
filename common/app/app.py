@@ -143,6 +143,7 @@ class Client(App):
     def __init__(self, id, port):
         super().__init__(id)
         self.listening_port = port
+        self.address_server = None
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.listening_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -153,12 +154,17 @@ class Client(App):
         logging.info('start listening...')
         self.listening_socket.bind(('localhost', self.listening_port))
         self.listening_socket.listen()
-        try:
-            conn, address = self.listening_socket.accept()
-            logging.info(f'input connection from {address}')
-        except Exception as err:
-            logging.error(err.with_traceback(None))
-            return
+        self.listening_socket.settimeout(2)
+        while True:
+            try:
+                conn, address = self.listening_socket.accept()
+                logging.info(f'input connection from {address}')
+            except TimeoutError:
+                if self.connection is None:
+                    return
+            except Exception as err:
+                logging.error(err.with_traceback(None))
+                return
         self.listening_socket.close()
         self.listening_socket = conn
 
@@ -175,8 +181,8 @@ class Client(App):
                                          author=name,
                                          receiver='server').json().encode('utf- 8'))
             result = True
+            self.address_server = host, port
         except ConnectionRefusedError as err:
-            print(err)
+            logging.error(err)
             result = False
-        listening_thread.join()
         return result
