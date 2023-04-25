@@ -153,18 +153,18 @@ class Client(App):
     def listen(self):
         logging.info('start listening...')
         self.listening_socket.bind(('localhost', self.listening_port))
-        self.listening_socket.listen()
-        self.listening_socket.settimeout(2)
         while True:
+            self.listening_socket.listen()
+            self.listening_socket.settimeout(2)
             try:
                 conn, address = self.listening_socket.accept()
                 logging.info(f'input connection from {address}')
             except TimeoutError:
                 if self.connection is None:
-                    return
+                    break
             except Exception as err:
                 logging.error(err.with_traceback(None))
-                return
+                break
         self.listening_socket.close()
         self.listening_socket = conn
 
