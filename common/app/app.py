@@ -124,7 +124,7 @@ class Server(App):
         while True:
             for client_id, conn in self.connections.items():
                 msg = read(conn)
-                logging.info(f'get msg from {client_id}: {msg}')
+                logging.info(f'get msg from {client_id}: {msg.json()}')
 
     def new_connection(self, sock, address):
         msg = read(sock)

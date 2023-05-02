@@ -38,7 +38,6 @@ class Message:
                 'author': self.author,
                 'receiver': self.receiver,
                 'content': self.content}
-        print(data)
         return json.dumps(data)
 
     def answer(self, content: dict):
