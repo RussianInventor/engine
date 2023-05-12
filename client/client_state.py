@@ -47,9 +47,10 @@ class IdleState(State):
                                                 "name": name},
                                        author=owner,
                                        receiver="server")
+        print(new_message.content)
         answer = self.app.send_message(new_message)
         print('>>>', answer)
 
+
 class GamingState(State):
     pass
-

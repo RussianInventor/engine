@@ -21,15 +21,15 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.new_world.clicked.connect(lambda: self.show_frame('world_frame'))
         self.create_button.clicked.connect(lambda: self.client.state.execute("create_world",
                                                                              {"name": self.world_name.text(),
-                                                                              "type": self.world_type.text(),
-                                                                              "private": self.world_private.checkState(),
+                                                                              "type": "ground",
+                                                                              "private": self.world_private.isChecked(),
                                                                               "owner": Config.id}))
 
     def connect(self):
         host = self.hostEntry.text()
         port = int(self.portEntry.text())
         if self.client.connect(host, port, Config.id, Config.port):
-            self.show_frame('idle_frame')
+            self.show_frame('idle_frame', on_load=self.load_worlds)
             self.client.set_state(IdleState)
         else:
             QtWidgets.QMessageBox(self, text="Проверьте адрес сервера и порт").show()

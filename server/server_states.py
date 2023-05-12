@@ -42,10 +42,11 @@ class IdleState(State):
             new_world.type = msg.content["type"]
             new_world.owner = msg.content["owner"]
             new_world.private = msg.content["private"]
+            new_world.name = msg.content["name"]
             with new_session() as session:
                 session.add(new_world)
                 session.commit()
-            msg.answer(content={c.name: new_world.__getattribute__(c.name) for c in new_world.__table__.c})
+                msg.answer(content={c.name: new_world.__getattribute__(c.name) for c in new_world.__table__.c})
 
 
 class GamingState(State):
