@@ -1,3 +1,4 @@
+import logging
 import subprocess
 from common.app.app import Client
 from client.config import Config
@@ -45,7 +46,7 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
 
     def load_worlds(self):
         for world in self.client.state.execute("get_world"):
-            self.world_selection.addItem(text=world['name'], userData=world['id'])
+            self.world_selection.addItem(world['name'], world['id'])
 
 
 def run_interface(client):

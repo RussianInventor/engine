@@ -166,6 +166,7 @@ class Client(App):
             try:
                 conn, address = self.listening_socket.accept()
                 logging.info(f'input connection from {address}')
+                break
                 # m = Message(self.listening_socket, 'test', time.time(), {'test': 'test'}, self.user.user_id, 'server')
                 # self.send_message(m)
             except TimeoutError:
