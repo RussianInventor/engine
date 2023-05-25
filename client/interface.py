@@ -23,14 +23,14 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
                                                                              {"name": self.world_name.text(),
                                                                               "type": "ground",
                                                                               "private": self.world_private.isChecked(),
-                                                                              "owner": Config.id}))
+                                                                              "owner": client.user.user_id}))
 
     def connect(self):
         host = self.hostEntry.text()
         port = int(self.portEntry.text())
         if self.client.connect(host, port, Config.id, Config.port):
-            self.show_frame('idle_frame', on_load=self.load_worlds)
             self.client.set_state(IdleState)
+            self.show_frame('idle_frame', on_load=self.load_worlds)
         else:
             QtWidgets.QMessageBox(self, text="Проверьте адрес сервера и порт").show()
 
@@ -45,7 +45,7 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
 
     def load_worlds(self):
         for world in self.client.state.execute("get_world"):
-            self.world_selection.addItem(text=world.name, userData=world.id)
+            self.world_selection.addItem(text=world['name'], userData=world['id'])
 
 
 def run_interface(client):

@@ -29,7 +29,7 @@ def read(sock):
             pass
         else:
             break
-    print(message)
+
     if 'title' in message.keys():
         return Message(connection=sock, **message)
     else:
@@ -78,9 +78,11 @@ class App(ABC):
         pass
 
     def send_message(self, message: Message):
-        connection = self.get_sending_socket(message.receiver)
+        connection: socket.socket = self.get_sending_socket(message.receiver)
+        logging.info(f'send: {message.json()}')
         connection.send(message.json().encode('utf- 8'))
         answer = read(connection)
+        logging.info(f'answer: {answer.json()}')
         return answer
 
     def read_message(self, connection_id) -> Message:
@@ -121,6 +123,7 @@ class Server(App):
                 print(error)
 
     def listen_clients(self):
+        logging.debug('listen clients')
         while True:
             for client_id, conn in self.connections.items():
                 msg = read(conn)
@@ -129,12 +132,14 @@ class Server(App):
 
     def new_connection(self, sock, address):
         msg = read(sock)
+        logging.info(msg)
         if isinstance(msg, Message) and msg.type == MessageType.CONNECT:
             logging.info(f'new connection from {address}')
             client_id = msg.author
             self.connections[client_id] = sock
             self.receivers[client_id] = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             logging.debug(f'try to connect to {address[0]}:{msg.content.get("port")}')
+            msg.answer({'result': 'success'})
             self.receivers[client_id].connect((address[0], msg.content.get("port")))
         else:
             print('fail')
@@ -161,27 +166,30 @@ class Client(App):
             try:
                 conn, address = self.listening_socket.accept()
                 logging.info(f'input connection from {address}')
+                # m = Message(self.listening_socket, 'test', time.time(), {'test': 'test'}, self.user.user_id, 'server')
+                # self.send_message(m)
             except TimeoutError:
                 if self.connection is None:
                     break
             except Exception as err:
                 logging.error(err.with_traceback(None))
                 break
-        self.listening_socket.close()
-        self.listening_socket = conn
+        # self.listening_socket.close()
+        # self.listening_socket = conn
 
     def connect(self, host, port, name, listening_port):
         logging.info(f'connecting to {host}:{port}...')
         listening_thread = threading.Thread(target=self.listen)
         listening_thread.start()
+        msg = Message(connection=self.connection,
+                      title='connect',
+                      time=time.time(),
+                      content={'port': self.listening_port},
+                      author=name,
+                      receiver='server')
         try:
             self.connection.connect((host, port))
-            self.connection.send(Message(connection=self.connection,
-                                         title='connect',
-                                         time=time.time(),
-                                         content={'port': self.listening_port},
-                                         author=name,
-                                         receiver='server').json().encode('utf- 8'))
+            self.send_message(msg)
             result = True
             self.address_server = host, port
         except ConnectionRefusedError as err:

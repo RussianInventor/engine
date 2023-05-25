@@ -1,4 +1,5 @@
 import logging
+import traceback
 from abc import ABC, abstractmethod
 from common.app import messages
 from common import model, game, world
@@ -45,8 +46,14 @@ class IdleState(State):
             new_world.name = msg.content["name"]
             with new_session() as session:
                 session.add(new_world)
-                session.commit()
-                msg.answer(content={c.name: new_world.__getattribute__(c.name) for c in new_world.__table__.c})
+                try:
+                    session.commit()
+                except Exception as err:
+                    msg.answer(content={'error': str(err), 'details': traceback.format_exc()})
+                    logging.error(str(err))
+                    logging.error(traceback.format_exc())
+                else:
+                    msg.answer(content={c.name: new_world.__getattribute__(c.name) for c in new_world.__table__.c})
 
 
 class GamingState(State):

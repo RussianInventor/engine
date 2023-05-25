@@ -48,3 +48,6 @@ class Message:
                       author=self.receiver,
                       receiver=self.author)
         self.connection.send(msg.json().encode('utf-8'))
+
+    def has_error(self):
+        return 'error' in self.content.keys()

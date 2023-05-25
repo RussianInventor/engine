@@ -35,7 +35,10 @@ class IdleState(State):
                                        content={},
                                        author=self.app.user.user_id,
                                        receiver="server")
-        self.app.send_message(new_message)
+        answer = self.app.send_message(new_message)
+        if answer.has_error():
+            return []
+        return answer.content.get('worlds')
 
     def create_world(self, name, type, private, owner):
         new_message = messages.Message(connection=self.app.connection,
