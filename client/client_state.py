@@ -40,6 +40,17 @@ class IdleState(State):
             return []
         return answer.content.get('worlds')
 
+    def delete_world(self, id, owner):
+        new_message = messages.Message(connection=self.app.connection,
+                                       title=messages.MessageType.DELETE_WORLD,
+                                       time=time.time(),
+                                       content={"id": id},
+                                       author=owner,
+                                       receiver="server")
+        print(new_message.content)
+        answer = self.app.send_message(new_message)
+        print('>>>', answer)
+
     def create_world(self, name, type, private, owner):
         new_message = messages.Message(connection=self.app.connection,
                                        title=messages.MessageType.CREATE_WORLD,

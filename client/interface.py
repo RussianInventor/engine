@@ -22,13 +22,17 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.new_world.clicked.connect(lambda: self.show_frame('world_frame'))
         self.create_button.clicked.connect(self.create_world)
 
+    def delete_world(self):
+        print(self.world_selection.itemData(self.world_selection.c))
+        self.client.state.execute("delete_world", {"id": self.world_selection.itemData()})
+
     def create_world(self):
         self.client.state.execute("create_world",
                                   {"name": self.world_name.text(),
                                    "type": "ground",
                                    "private": self.world_private.isChecked(),
                                    "owner": self.client.user.user_id})
-        self.show_frame("idle_state", self.load_worlds)
+        self.show_frame("idle_frame", self.load_worlds)
 
     def connect(self):
         host = self.hostEntry.text()

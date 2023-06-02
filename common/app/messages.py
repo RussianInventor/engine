@@ -9,6 +9,7 @@ class MessageType:
     RUN_GAME = "run_game"
     CREATE_WORLD = "create_world"
     WORLD_LIST = "world_list"
+    DELETE_WORLD = "delete_world"
 
 
 class Message:

@@ -54,6 +54,11 @@ class IdleState(State):
                     logging.error(traceback.format_exc())
                 else:
                     msg.answer(content={c.name: new_world.__getattribute__(c.name) for c in new_world.__table__.c})
+        if msg.title == messages.MessageType.DELETE_WORLD:
+            with new_session() as session:
+                delete = session.query(model.World).filter(model.World.id == msg.content["id"]).first
+                session.delete(delete)
+                session.commit()
 
 
 class GamingState(State):
