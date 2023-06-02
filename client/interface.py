@@ -23,7 +23,11 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.create_button.clicked.connect(self.create_world)
 
     def delete_world(self):
-        print(self.world_selection.itemData(self.world_selection.c))
+        ind = self.world_selection.currentIndex()
+        data = self.world_selection.currentData()
+        print(ind)
+        print(data)
+        print(self.world_selection.itemData())
         self.client.state.execute("delete_world", {"id": self.world_selection.itemData()})
 
     def create_world(self):
