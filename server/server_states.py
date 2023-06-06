@@ -56,9 +56,14 @@ class IdleState(State):
                     msg.answer(content={c.name: new_world.__getattribute__(c.name) for c in new_world.__table__.c})
         if msg.title == messages.MessageType.DELETE_WORLD:
             with new_session() as session:
-                delete = session.query(model.World).filter(model.World.id == msg.content["id"]).first
-                session.delete(delete)
-                session.commit()
+                try:
+                    delete = session.query(model.World).filter(model.World.id == msg.content["id"]).first()
+                    session.delete(delete)
+                    session.commit()
+                    msg.answer(content={"result": "success"})
+                except Exception as err:
+                    msg.answer(content={"result": str(err), "details": traceback.format_exc()})
+
 
 
 class GamingState(State):

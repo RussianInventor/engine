@@ -21,14 +21,12 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.connectButton.clicked.connect(self.connect)
         self.new_world.clicked.connect(lambda: self.show_frame('world_frame'))
         self.create_button.clicked.connect(self.create_world)
+        self.delete_button.clicked.connect(self.delete_world)
 
     def delete_world(self):
-        ind = self.world_selection.currentIndex()
         data = self.world_selection.currentData()
-        print(ind)
-        print(data)
-        print(self.world_selection.itemData())
-        self.client.state.execute("delete_world", {"id": self.world_selection.itemData()})
+        self.client.state.execute("delete_world", {"id": data, "owner": self.client.user.user_id})
+        self.load_worlds()
 
     def create_world(self):
         self.client.state.execute("create_world",
@@ -57,6 +55,7 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
                 frame.hide()
 
     def load_worlds(self):
+        self.world_selection.clear()
         for world in self.client.state.execute("get_world"):
             self.world_selection.addItem(world['name'], world['id'])
 
