@@ -80,6 +80,7 @@ class Pygame:
 
 class Game:
     EVENTS_UPDATE_LIMIT = 100
+
     def __init__(self, players, world: world.World):
         self.world = world
         self.players = players

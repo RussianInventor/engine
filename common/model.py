@@ -10,6 +10,12 @@ class WorldType(Base):
     description = Column(TEXT)
 
 
+class ChunkType(Base):
+    __tablename__ = "chunk_types"
+    type = Column(TEXT, primary_key=True)
+    description = Column(TEXT)
+
+
 class World(Base):
     __tablename__ = 'worlds'
     id = Column(TEXT, primary_key=True)
@@ -29,8 +35,9 @@ class Chunk(Base):
     world_id = Column(TEXT, ForeignKey(World.id))
     x = Column(INTEGER)
     y = Column(INTEGER)
+    biome = Column(TEXT, ForeignKey(ChunkType.type))
 
-    def __init__(self, id, world_id):
+    def __init__(self, id, world_id, x, y):
         for key, val in locals().items():
             self.__setattr__(key, val)
 
@@ -41,4 +48,3 @@ class Object(Base):
     world_id = Column(TEXT, ForeignKey(World.id))
     data = Column(JSON)
     cls = Column(TEXT)
-

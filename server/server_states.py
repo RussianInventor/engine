@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from common.data_base import engine
 from sqlalchemy import or_
 import uuid
+from common.config import Config
 
 
 def new_session():
@@ -44,6 +45,11 @@ class IdleState(State):
             new_world.owner = msg.content["owner"]
             new_world.private = msg.content["private"]
             new_world.name = msg.content["name"]
+            new_chunks = []
+            for x in Config.test_w_number_chunk:
+                for y in Config.test_h_number_chunk:
+                    new_chunks.append(model.Chunk(uuid.uuid4(), new_world.id,
+                                                  x, y))
             with new_session() as session:
                 session.add(new_world)
                 try:
@@ -63,7 +69,6 @@ class IdleState(State):
                     msg.answer(content={"result": "success"})
                 except Exception as err:
                     msg.answer(content={"result": str(err), "details": traceback.format_exc()})
-
 
 
 class GamingState(State):
