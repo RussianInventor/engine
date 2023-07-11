@@ -3,7 +3,9 @@ import subprocess
 from common.app.app import Client
 from client.config import Config
 from .client_state import IdleState
-from .graphic import scene
+from .graphic import test
+from PyQt5 import Qt
+
 
 subprocess.call(("pyuic5",
                  "client/untitled.ui",
@@ -24,7 +26,10 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.create_button.clicked.connect(self.create_world)
         self.delete_button.clicked.connect(self.delete_world)
         self.play_button.clicked.connect(self.start_game)
-        self.canvas.setScene(scene)
+
+        self.scene = Qt.QGraphicsScene()
+        test(self.scene)
+        self.canvas.setScene(self.scene)
 
     def start_game(self):
         data = self.world_selection.currentData()
