@@ -1,16 +1,6 @@
 import sys
 
 
-excepthook = sys.excepthook
-
-
-def exception_hook(exctype, value, traceback):
-    print(exctype, value, traceback)
-    excepthook(exctype, value, traceback)
-    sys.exit(1)
-
-
-sys.excepthook = exception_hook
 from common.app.app import Client
 import uuid
 import logging
