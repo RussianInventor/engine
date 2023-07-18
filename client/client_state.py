@@ -51,14 +51,15 @@ class IdleState(State):
         answer = self.app.send_message(new_message)
         print('>>>', answer)
 
-    def create_world(self, name, type, private, owner):
+    def create_world(self, name, type, private, owner, size):
         new_message = messages.Message(connection=self.app.connection,
                                        title=messages.MessageType.CREATE_WORLD,
                                        time=time.time(),
                                        content={"type": type,
                                                 "owner": owner,
                                                 "private": private,
-                                                "name": name},
+                                                "name": name,
+                                                "size": size},
                                        author=owner,
                                        receiver="server")
         print(new_message.content)

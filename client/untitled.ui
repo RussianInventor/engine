@@ -230,34 +230,65 @@
       </rect>
      </property>
      <layout class="QGridLayout" name="gridLayout_3">
-      <item row="9" column="1">
+      <item row="0" column="2">
+       <widget class="QLineEdit" name="world_name">
+        <property name="text">
+         <string>new_world</string>
+        </property>
+       </widget>
+      </item>
+      <item row="10" column="2">
        <widget class="QPushButton" name="create_button">
         <property name="text">
          <string>Создать</string>
         </property>
        </widget>
       </item>
-      <item row="0" column="1">
-       <widget class="QLineEdit" name="world_name">
-        <property name="text">
-         <string>ftr</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>Имя</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
+      <item row="2" column="2">
        <widget class="QCheckBox" name="world_private">
         <property name="text">
          <string>Приватный</string>
         </property>
         <property name="checked">
          <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QComboBox" name="switch_size">
+        <item>
+         <property name="text">
+          <string>test</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>small</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>medium</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>big</string>
+         </property>
+        </item>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="2">
+       <widget class="QLabel" name="label_3">
+        <property name="text">
+         <string> Размер:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="2">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>   Имя:</string>
         </property>
        </widget>
       </item>
@@ -290,6 +321,10 @@
      </property>
     </widget>
    </widget>
+   <zorder>game_frame</zorder>
+   <zorder>connection_frame</zorder>
+   <zorder>idle_frame</zorder>
+   <zorder>world_frame</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

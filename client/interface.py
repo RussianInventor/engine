@@ -1,10 +1,11 @@
 import logging
 import subprocess
 from common.app.app import Client
+from common.config import Config as ComConfig
 from client.config import Config
 from .client_state import IdleState
 from .graphic import test
-from PyQt5 import Qt
+from PyQt5.QtWidgets import QGraphicsScene
 
 
 subprocess.call(("pyuic5",
@@ -22,12 +23,12 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.setupUi(self)
         self.client = client
         self.connectButton.clicked.connect(self.connect)
-        self.new_world.clicked.connect(lambda: self.show_frame('world_frame'))
+        self.new_world.clicked.connect(lambda: self.show_frame('world_frame', self.new_world_setting))
         self.create_button.clicked.connect(self.create_world)
         self.delete_button.clicked.connect(self.delete_world)
         self.play_button.clicked.connect(self.start_game)
 
-        self.scene = Qt.QGraphicsScene()
+        self.scene = QGraphicsScene()
         test(self.scene)
         self.canvas.setScene(self.scene)
 
@@ -36,6 +37,7 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         if data is None:
             QtWidgets.QMessageBox(self, text="Выберите мир").show()
             return
+        self.show_frame("game_frame")
 
     def delete_world(self):
         data = self.world_selection.currentData()
@@ -47,8 +49,14 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
                                   {"name": self.world_name.text(),
                                    "type": "ground",
                                    "private": self.world_private.isChecked(),
-                                   "owner": self.client.user.user_id})
+                                   "owner": self.client.user.user_id,
+                                   "size": self.switch_size.currentData()})
         self.show_frame("idle_frame", self.load_worlds)
+
+    def new_world_setting(self):
+        self.switch_size.clear()
+        for key, val in ComConfig.world_size.items():
+            self.switch_size.addItem(key, val)
 
     def connect(self):
         host = self.hostEntry.text()

@@ -37,21 +37,27 @@ class IdleState(State):
                 q = q.filter(or_(model.World.private == False,
                                  model.World.owner == msg.author))
                 worlds = q.all()
-                msg.answer(content={"worlds": [{c.name: i.__getattribute__(c.name) for c in i.__table__.c} for i in worlds]})
+                msg.answer(
+                    content={"worlds": [{c.name: i.__getattribute__(c.name) for c in i.__table__.c} for i in worlds]})
                 # self.app.send_message(message.author, answer)
         if msg.title == messages.MessageType.CREATE_WORLD:
-            new_world = model.World(str(uuid.uuid4()))
+            world_id = str(uuid.uuid4())
+            new_world = model.World(world_id)
             new_world.type = msg.content["type"]
             new_world.owner = msg.content["owner"]
             new_world.private = msg.content["private"]
             new_world.name = msg.content["name"]
+            new_world.size = msg.content["size"]
             new_chunks = []
-            for x in Config.test_w_number_chunk:
-                for y in Config.test_h_number_chunk:
-                    new_chunks.append(model.Chunk(uuid.uuid4(), new_world.id,
-                                                  x, y))
+            #НЕ УДАЛЯТЬ ЭТО КРАШ ТЕСТ КОМПА
             with new_session() as session:
                 session.add(new_world)
+                session.commit()
+            with new_session() as session:
+                for x in range(msg.content["size"]):
+                    for y in range(msg.content["size"]):
+                        session.add(model.Chunk(uuid.uuid4(), world_id,
+                                                x, y, model.Biome.FIELD))
                 try:
                     session.commit()
                 except Exception as err:
@@ -63,8 +69,8 @@ class IdleState(State):
         if msg.title == messages.MessageType.DELETE_WORLD:
             with new_session() as session:
                 try:
-                    delete = session.query(model.World).filter(model.World.id == msg.content["id"]).first()
-                    session.delete(delete)
+                    session.query(model.Chunk).filter(model.Chunk.world_id == msg.content["id"]).delete()
+                    session.delete(session.query(model.World).filter(model.World.id == msg.content["id"]).first())
                     session.commit()
                     msg.answer(content={"result": "success"})
                 except Exception as err:
