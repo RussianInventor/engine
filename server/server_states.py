@@ -10,8 +10,8 @@ import uuid
 from common.config import Config
 
 
-def new_session():
-    ses = Session(bind=engine, autocommit=True)
+def new_session(expire_on_commit=True):
+    ses = Session(bind=engine, autocommit=True, expire_on_commit=expire_on_commit)
     ses.begin()
     return ses
 
@@ -50,13 +50,12 @@ class IdleState(State):
             new_world.size = msg.content["size"]
             new_chunks = []
             #НЕ УДАЛЯТЬ ЭТО КРАШ ТЕСТ КОМПА
-            with new_session() as session:
+            with new_session(expire_on_commit=False) as session:
                 session.add(new_world)
                 session.commit()
-            with new_session() as session:
                 for x in range(msg.content["size"]):
                     for y in range(msg.content["size"]):
-                        session.add(model.Chunk(uuid.uuid4(), world_id,
+                        session.add(model.Chunk(uuid.uuid4(), new_world.id,
                                                 x, y, model.Biome.FIELD))
                 try:
                     session.commit()
