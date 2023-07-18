@@ -3,17 +3,10 @@ import traceback
 from abc import ABC, abstractmethod
 from common.app import messages
 from common import model, game, world
-from sqlalchemy.orm import Session
-from common.data_base import engine
 from sqlalchemy import or_
 import uuid
+from common.data_base import new_session
 from common.config import Config
-
-
-def new_session(expire_on_commit=True):
-    ses = Session(bind=engine, autocommit=True, expire_on_commit=expire_on_commit)
-    ses.begin()
-    return ses
 
 
 class State(ABC):
@@ -52,7 +45,7 @@ class IdleState(State):
             #НЕ УДАЛЯТЬ ЭТО КРАШ ТЕСТ КОМПА
             with new_session(expire_on_commit=False) as session:
                 session.add(new_world)
-                session.commit()
+                session.flush()
                 for x in range(msg.content["size"]):
                     for y in range(msg.content["size"]):
                         session.add(model.Chunk(uuid.uuid4(), new_world.id,
