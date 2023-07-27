@@ -9,7 +9,7 @@ class Biome(Enum):
     FIELD = "field"
     MOUNTAINS = "mountains"
     BEACH = "beach"
-    SEA =  "sea"
+    WATER = "water"
     MEGA_MOUNTAINS = "MEGA_MOUNTAINS"
 
 class WorldType(Base):

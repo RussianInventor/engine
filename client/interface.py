@@ -4,8 +4,10 @@ from common.app.app import Client
 from common.config import Config as ComConfig
 from client.config import Config
 from .client_state import IdleState
-from .graphic import test
+from .graphic import draw_chunks
 from PyQt5.QtWidgets import QGraphicsScene
+from common import model
+from common.data_base import new_session
 
 
 subprocess.call(("pyuic5",
@@ -29,7 +31,6 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.play_button.clicked.connect(self.start_game)
 
         self.scene = QGraphicsScene()
-        test(self.scene)
         self.canvas.setScene(self.scene)
 
     def start_game(self):
@@ -37,6 +38,9 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         if data is None:
             QtWidgets.QMessageBox(self, text="Выберите мир").show()
             return
+        with new_session() as session:
+            chunks = session.query(model.Chunk).filter(model.Chunk.world_id == data).all()
+        draw_chunks(self.scene, chunks)
         self.show_frame("game_frame")
 
     def delete_world(self):
