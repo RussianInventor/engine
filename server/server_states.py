@@ -6,6 +6,7 @@ from common import model, game, world
 from sqlalchemy import or_
 import uuid
 from common.data_base import new_session
+from common.utils import procedure_generation
 from common.config import Config
 
 
@@ -58,6 +59,7 @@ class IdleState(State):
                     logging.error(traceback.format_exc())
                 else:
                     msg.answer(content={c.name: new_world.__getattribute__(c.name) for c in new_world.__table__.c})
+                procedure_generation(new_world)
         if msg.title == messages.MessageType.DELETE_WORLD:
             with new_session() as session:
                 try:

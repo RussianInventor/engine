@@ -10,7 +10,9 @@ class Biome(Enum):
     MOUNTAINS = "mountains"
     BEACH = "beach"
     WATER = "water"
+    DESERT = "desert"
     MEGA_MOUNTAINS = "MEGA_MOUNTAINS"
+
 
 class WorldType(Base):
     __tablename__ = 'world_types'
