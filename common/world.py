@@ -18,13 +18,17 @@ class Chunk(Storable):
     w = Config.CHUNK_SIZE
     h = Config.CHUNK_SIZE
 
-    def __init__(self):
+    def __init__(self, id, x, y, biome):
         self.creatures = []
         self.items = []
+        self.id = id
+        self.x = x
+        self.y = y
+        self.biome = biome
 
     @classmethod
     def from_db(cls, chunk):
-        return cls()
+        return cls(id=chunk.id, x=chunk.x, y=chunk.y, biome=chunk.biome)
 
     def add_obj(self, obj):
         if isinstance(obj, game_objects.Item):
@@ -46,16 +50,14 @@ class World(Storable):
     def from_db(cls, session, world_id):
         world = session.query(model.World).filter(model.World.id == world_id).first()
         new_world = cls(world.type)
-        y = 0
-        while True:
-            chunks = session.query(model.Chunk).filter(and_(model.Chunk.world_id == world_id,
-                                                            model.Chunk.y == y)).order_by(model.Chunk.x.asc()).all()
-            if not chunks:
-                break
-            new_world.chunks.append([])
-            for chunk in chunks:
-                new_world.chunks[-1].append(Chunk.from_db(chunk))
+        chunks = session.query(model.Chunk).filter(model.Chunk.world_id == world_id).order_by(model.Chunk.y.asc(),
+                                                                                              model.Chunk.x.asc()).all()
+        for chunk in chunks:
+            if len(new_world.chunks) == chunk.y:
+                new_world.chunks.append([])
+            new_world.chunks[-1].append(Chunk.from_db(chunk))
         objs = session.query(model.Object).filter(model.Object.world_id == world_id).all()
+
         clses = vars(game_objects)
         for obj in objs:
             cur_cls = clses[obj.cls]

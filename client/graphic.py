@@ -1,6 +1,7 @@
 from PyQt5.QtGui import QPen, QBrush, QColor
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGraphicsScene
+from common.config import Config
 
 chunk_color = {"field": (0, 200, 0),
                "mountains": (50, 0, 0),
@@ -11,9 +12,10 @@ chunk_color = {"field": (0, 200, 0),
                }
 
 
-def draw_chunks(scene: QGraphicsScene, chunks):
+def draw_chunks(scene: QGraphicsScene, chunks, scale):
+    size = Config.CHUNK_SIZE * scale
     for chu in chunks:
-        scene.addRect(chu.x*10, chu.y*10, 10, 10,
+        scene.addRect(chu.x*size, chu.y*size, size, size,
                       pen=QColor(*chunk_color[chu.biome]),
                       #brush=QBrush(Qt.BrushStyle.SolidPattern))
                       brush=QColor(*chunk_color[chu.biome]))

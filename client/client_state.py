@@ -2,6 +2,8 @@ import time
 from abc import ABC
 from common.app import messages
 from common.app.app import Client
+import graphic
+
 
 class State(ABC):
     def __init__(self, app: Client):
@@ -68,4 +70,6 @@ class IdleState(State):
 
 
 class GamingState(State):
-    pass
+    def graphic_update(self):
+        while True:
+            graphic.draw_chunks(self.app.)

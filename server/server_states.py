@@ -43,7 +43,7 @@ class IdleState(State):
             new_world.name = msg.content["name"]
             new_world.size = msg.content["size"]
             new_chunks = []
-            #НЕ УДАЛЯТЬ ЭТО КРАШ ТЕСТ КОМПА
+            # НЕ УДАЛЯТЬ ЭТО КРАШ ТЕСТ КОМПА
             with new_session(expire_on_commit=False) as session:
                 session.add(new_world)
                 session.flush()
