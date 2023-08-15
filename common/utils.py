@@ -8,19 +8,26 @@ def expansion(chunks, biome, x, y, num, world):
     if num < 1:
         return
     num -= 1
-    move = random.randint(-1, 1)
+    ch = None
     new_x = x
     new_y = y
-    if (x + move) != x:
-        new_x = x + move
-        if new_x < 0 or new_x >= world.size:
-            new_x = x
-    else:
-        move = random.choice((-1, 1))
-        new_y = y + move
-        if new_y < 0 or new_y >= world.size:
-            new_y = y
-    filter(lambda c: c.x == new_x and c.y == new_y, chunks).__next__().biome = biome.value
+    while ch is None:
+        move = random.randint(-1, 1)
+        new_x = x
+        new_y = y
+        if (x + move) != x:
+            new_x = x + move
+            if new_x < 0 or new_x >= world.size:
+                new_x = x
+        else:
+            move = random.choice((-1, 1))
+            new_y = y + move
+            if new_y < 0 or new_y >= world.size:
+                new_y = y
+        for chn in filter(lambda c: c.x == new_x and c.y == new_y and c.biome == model.Biome.FIELD, chunks).__next__().biome:
+            ch = chn
+    print(ch)
+    ch = biome.value
     expansion(chunks, biome, new_x, new_y, num, world)
 
 
@@ -30,10 +37,6 @@ def procedure_generation(world: model.World):
         chunks_num = len(chunks)
         water_num = int((chunks_num * (Config.world_percents["water"]) / 100))
         static_water_num = water_num
-        mountains_num = int(chunks_num * (Config.world_percents["mountains"] / 100))
-        static_mountains_num = mountains_num
-        desert_num = int(chunks_num * (Config.world_percents["desert"] / 100))
-        static_desert_num = desert_num
         while water_num > 1:
             water_size = int(random.randint(*Config.biome_percents["water"]) / 100 * static_water_num)
             x = random.randint(1, world.size - 2)
@@ -42,14 +45,28 @@ def procedure_generation(world: model.World):
             water_num -= water_size
             water_size -= 1
             expansion(chunks=chunks, biome=model.Biome.WATER, x=x, y=y, num=water_size, world=world)
+        session.commit()
+    with new_session() as session:
+        chunks = session.query(model.Chunk).filter(model.Chunk.world_id == world.id).all()
+        chunks_num = len(chunks)
+        desert_num = int(chunks_num * (Config.world_percents["desert"] / 100))
+        static_desert_num = desert_num
         while desert_num > 1:
             desert_size = int(random.randint(*Config.biome_percents["desert"]) / 100 * static_desert_num)
-            x = random.randint(1, world.size - 2)
-            y = random.randint(1, world.size - 2)
-            filter(lambda c: c.x == x and c.y == y, chunks).__next__().biome = model.Biome.DESERT.value
+            ch = None
+            while ch is None:
+                x = random.randint(1, world.size - 2)
+                y = random.randint(1, world.size - 2)
+                ch = filter(lambda c: c.x == x and c.y == y and c.biome == model.Biome.FIELD.value, chunks).__next__().biome
+            ch = model.Biome.DESERT.value
             desert_num -= desert_size
             desert_size -= 1
             expansion(chunks=chunks, biome=model.Biome.DESERT, x=x, y=y, num=desert_size, world=world)
+    with new_session() as session:
+        chunks = session.query(model.Chunk).filter(model.Chunk.world_id == world.id).all()
+        chunks_num = len(chunks)
+        mountains_num = int(chunks_num * (Config.world_percents["mountains"] / 100))
+        static_mountains_num = mountains_num
         while mountains_num > 1:
             mountains_size = int(random.randint(*Config.biome_percents["mountains"]) / 100 * static_mountains_num)
             x = random.randint(1, world.size - 2)
