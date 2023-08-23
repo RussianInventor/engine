@@ -24,6 +24,13 @@ def expansion(chunks, biome, x, y, num, world):
     expansion(chunks, biome, new_x, new_y, num, world)
 
 
+def get_biome_size(biome_type, static_biome_num):
+    size = int(random.randint(*Config.biome_percents[biome_type]) / 100 * static_biome_num)
+    if size < 1:
+        size = 1
+    return size
+
+
 def procedure_generation(world: model.World):
     with new_session() as session:
         chunks = session.query(model.Chunk).filter(model.Chunk.world_id == world.id).all()
@@ -35,7 +42,7 @@ def procedure_generation(world: model.World):
         desert_num = int(chunks_num * (Config.world_percents["desert"] / 100))
         static_desert_num = desert_num
         while water_num > 1:
-            water_size = int(random.randint(*Config.biome_percents["water"]) / 100 * static_water_num)
+            water_size = get_biome_size("water", static_water_num)
             x = random.randint(1, world.size - 2)
             y = random.randint(1, world.size - 2)
             filter(lambda c: c.x == x and c.y == y, chunks).__next__().biome = model.Biome.WATER.value
@@ -43,7 +50,7 @@ def procedure_generation(world: model.World):
             water_size -= 1
             expansion(chunks=chunks, biome=model.Biome.WATER, x=x, y=y, num=water_size, world=world)
         while desert_num > 1:
-            desert_size = int(random.randint(*Config.biome_percents["desert"]) / 100 * static_desert_num)
+            desert_size = get_biome_size("desert", static_desert_num)
             x = random.randint(1, world.size - 2)
             y = random.randint(1, world.size - 2)
             filter(lambda c: c.x == x and c.y == y, chunks).__next__().biome = model.Biome.DESERT.value
@@ -51,7 +58,7 @@ def procedure_generation(world: model.World):
             desert_size -= 1
             expansion(chunks=chunks, biome=model.Biome.DESERT, x=x, y=y, num=desert_size, world=world)
         while mountains_num > 1:
-            mountains_size = int(random.randint(*Config.biome_percents["mountains"]) / 100 * static_mountains_num)
+            mountains_size = get_biome_size("mountains", static_mountains_num)
             x = random.randint(1, world.size - 2)
             y = random.randint(1, world.size - 2)
             filter(lambda c: c.x == x and c.y == y, chunks).__next__().biome = model.Biome.MOUNTAINS.value

@@ -1,4 +1,5 @@
 class Config:
+    scale = 1
     CHUNK_SIZE = 25
     world_percents = {"water": 40,
                       "mountains": 5,

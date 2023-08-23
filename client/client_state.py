@@ -2,7 +2,7 @@ import time
 from abc import ABC
 from common.app import messages
 from common.app.app import Client
-import graphic
+#import graphic
 
 
 class State(ABC):

@@ -8,6 +8,7 @@ from .graphic import draw_chunks
 from PyQt5.QtWidgets import QGraphicsScene
 from common import model
 from common.data_base import new_session
+from common.game import Game
 
 
 subprocess.call(("pyuic5",
@@ -17,6 +18,14 @@ subprocess.call(("pyuic5",
 import sys
 from PyQt5 import QtWidgets
 from . import design
+
+
+class Scene(QGraphicsScene):
+    def wheelEvent(self, event):
+        if event.delta() > 0:
+            ComConfig.scale += 0.1
+        if event.delta() < 0:
+            ComConfig.scale -= 0.1
 
 
 class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
@@ -30,17 +39,18 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.delete_button.clicked.connect(self.delete_world)
         self.play_button.clicked.connect(self.start_game)
 
-        self.scene = QGraphicsScene()
+        self.scene = Scene()
         self.canvas.setScene(self.scene)
 
     def start_game(self):
+        self.client.game = Game([], )
         data = self.world_selection.currentData()
         if data is None:
             QtWidgets.QMessageBox(self, text="Выберите мир").show()
             return
         with new_session() as session:
             chunks = session.query(model.Chunk).filter(model.Chunk.world_id == data).all()
-        draw_chunks(self.scene, chunks)
+        draw_chunks(self.scene, chunks, ComConfig.scale)
         self.show_frame("game_frame")
 
     def delete_world(self):
