@@ -48,45 +48,50 @@ class I(Object, Moving):
         super(Moving).__init__(v=1)
 
 
-class Pygame:
-    def __init__(self, game):
-        self.screen = None
-        self.game = game
-
-    def start(self):
-        pygame.init()
-        self.screen = pygame.display.set_mode((500, 500))
-        while True:
-            self.update()
-
-    def check_key(self, key_code):
-        command = self.game.keyboard.get_key(key_code)
-        if command is not None:
-            command()
-
-    def update(self):
-        start_time = time.time()
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                self.check_key(event.key)
-            if event.type == pygame.QUIT:
-                exit()
-        pygame.display.update()
-
-        duration = time.time() - start_time
-        if duration < config.Config.frame_duration:
-            time.sleep(config.Config.frame_duration - duration)
+# class Pygame:
+#     def __init__.py(self, game):
+#         self.screen = None
+#         self.game = game
+#
+#     def start(self):
+#         pygame.init()
+#         self.screen = pygame.display.set_mode((500, 500))
+#         while True:
+#             self.update()
+#
+#     def check_key(self, key_code):
+#         command = self.game.keyboard.get_key(key_code)
+#         if command is not None:
+#             command()
+#
+#     def update(self):
+#         start_time = time.time()
+#         for event in pygame.event.get():
+#             if event.type == pygame.KEYDOWN:
+#                 self.check_key(event.key)
+#             if event.type == pygame.QUIT:
+#                 exit()
+#         pygame.display.update()
+#
+#         duration = time.time() - start_time
+#         if duration < config.Config.frame_duration:
+#             time.sleep(config.Config.frame_duration - duration)
 
 
 class Game:
     EVENTS_UPDATE_LIMIT = 100
 
-    def __init__(self, players, world: world.World):
-        self.world = world
+    def __init__(self, app, players, world_id):
+        self.app = app
+        self.world = self.load_world(world_id)
         self.players = players
         self.events = queue.PriorityQueue()
         self.messages = queue.PriorityQueue()
         self.keyboard = config.Keyboard()
+
+    def load_world(self, world_id):
+        # TODO read from server
+        return world.World(1)
 
     def update_pygame(self):
         pass

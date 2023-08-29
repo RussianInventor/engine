@@ -1,13 +1,11 @@
 import logging
 import subprocess
-from common.app.app import Client
 from common.config import Config as ComConfig
 from client.config import Config
 from .client_state import IdleState
 from .graphic import draw_chunks
 from PyQt5.QtWidgets import QGraphicsScene
 from common import model
-from common.data_base import new_session
 from common.game import Game
 
 
@@ -29,10 +27,10 @@ class Scene(QGraphicsScene):
 
 
 class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
-    def __init__(self, client: Client):
+    def __init__(self, app):
         super().__init__()
         self.setupUi(self)
-        self.client = client
+        self.app = app
         self.connectButton.clicked.connect(self.connect)
         self.new_world.clicked.connect(lambda: self.show_frame('world_frame', self.new_world_setting))
         self.create_button.clicked.connect(self.create_world)
@@ -42,16 +40,26 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.scene = Scene()
         self.canvas.setScene(self.scene)
 
+    def start(self):
+        self.show()
+        self.show_frame('connection_frame')
+
     def start_game(self):
-        self.client.game = Game([], )
-        data = self.world_selection.currentData()
-        if data is None:
+        world_id = self.world_selection.currentData()
+        if world_id is None:
             QtWidgets.QMessageBox(self, text="Выберите мир").show()
             return
-        with new_session() as session:
-            chunks = session.query(model.Chunk).filter(model.Chunk.world_id == data).all()
-        draw_chunks(self.scene, chunks, ComConfig.scale)
+
+        self.app.game = Game(self.app, players=[], world_id=world_id)
+
+
+        # with new_session() as session:
+        #     chunks = session.query(model.Chunk).filter(model.Chunk.world_id == data).all()
+        # draw_chunks(self.scene, chunks, ComConfig.scale)
         self.show_frame("game_frame")
+
+    def draw_all(self):
+        draw_chunks(self.scene, chunks, ComConfig.scale)
 
     def delete_world(self):
         data = self.world_selection.currentData()
@@ -76,7 +84,7 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         host = self.hostEntry.text()
         port = int(self.portEntry.text())
         if self.client.connect(host, port, Config.id, Config.port):
-            self.client.set_state(IdleState)
+            self.app.set_state(IdleState)
             self.show_frame('idle_frame', on_load=self.load_worlds)
         else:
             QtWidgets.QMessageBox(self, text="Проверьте адрес сервера и порт").show()
@@ -96,9 +104,9 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             self.world_selection.addItem(world['name'], world['id'])
 
 
-def run_interface(client):
-    app = QtWidgets.QApplication(sys.argv)
-    window = InterApp(client)
-    window.show()
-    window.show_frame('connection_frame')
-    app.exec_()
+def create_interface(app):
+    return InterApp(app)
+
+
+def create_app():
+    return QtWidgets.QApplication(sys.argv)

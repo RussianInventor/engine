@@ -17,6 +17,7 @@ engine = create_engine(game_url)
 
 model.Base.metadata.create_all(engine)
 
+
 def new_session(expire_on_commit=True):
     ses = Session(bind=engine, autocommit=True, expire_on_commit=expire_on_commit)
     ses.begin()

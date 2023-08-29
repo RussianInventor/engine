@@ -63,7 +63,7 @@ class Connection:
 
 
 class App(ABC):
-    def __init__(self, user_id):
+    def __init__(self, user_id, app):
         self.connections = {}
         self.state = None
 
@@ -72,6 +72,7 @@ class App(ABC):
 
         self.game = None
         self.user = User(user_id)
+        self.app = app
 
     @abstractmethod
     def get_sending_socket(self, receiver):
@@ -89,18 +90,17 @@ class App(ABC):
         connection = self.connections.get(connection_id)
         return connection.read()
 
-    def set_state(self, state_cls):
-        self.state = state_cls(self)
+
 
 
 class Server(App):
     port_num = 4000
     backlog = 10
 
-    def __init__(self, id, port):
-        super().__init__(id)
+    def __init__(self, app, id, port):
+        super().__init__(user_id=id, app=app)
         self.main_port = port
-        self.receivers = {}  # {client_id: socket, ...} - receivers for world updates, server sends, they listen
+        self.receivers = {}  # {client_id: socket, ...} - receivers for world updates, server.py sends, they listen
         self.connections = {}  # {client_id: socket, ...} - both-ways connections
 
         self.listening_thread = threading.Thread(target=self.listen)
@@ -147,8 +147,8 @@ class Server(App):
 
 
 class Client(App):
-    def __init__(self, id, port):
-        super().__init__(id)
+    def __init__(self, app, id, port):
+        super().__init__(user_id=id, app=app)
         self.listening_port = port
         self.address_server = None
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -167,7 +167,7 @@ class Client(App):
                 conn, address = self.listening_socket.accept()
                 logging.info(f'input connection from {address}')
                 break
-                # m = Message(self.listening_socket, 'test', time.time(), {'test': 'test'}, self.user.user_id, 'server')
+                # m = Message(self.listening_socket, 'test', time.time(), {'test': 'test'}, self.user.user_id, 'server.py')
                 # self.send_message(m)
             except TimeoutError:
                 if self.connection is None:
@@ -187,7 +187,7 @@ class Client(App):
                       time=time.time(),
                       content={'port': self.listening_port},
                       author=name,
-                      receiver='server')
+                      receiver='server.py')
         try:
             self.connection.connect((host, port))
             self.send_message(msg)

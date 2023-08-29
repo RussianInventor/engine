@@ -1,7 +1,7 @@
 import logging
 import traceback
 from abc import ABC, abstractmethod
-from common.app import messages
+from common.exchange import messages
 from common import model, game, world
 from sqlalchemy import or_
 import uuid
@@ -33,7 +33,7 @@ class IdleState(State):
                 worlds = q.all()
                 msg.answer(
                     content={"worlds": [{c.name: i.__getattribute__(c.name) for c in i.__table__.c} for i in worlds]})
-                # self.app.send_message(message.author, answer)
+                # self.exchange.send_message(message.author, answer)
         if msg.title == messages.MessageType.CREATE_WORLD:
             world_id = str(uuid.uuid4())
             new_world = model.World(world_id)

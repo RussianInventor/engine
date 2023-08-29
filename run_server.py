@@ -1,7 +1,7 @@
 import logging
 import argparse
 from common.game import Game
-from common.app.app import Server
+from server.server import ServerApp
 from server.config import Config
 import threading
 from server.server_states import IdleState
@@ -9,27 +9,13 @@ from server.server_states import IdleState
 parser = argparse.ArgumentParser()
 parser.add_argument("--port", type=int, required=False, default=Config.port)
 port = parser.parse_args().port
-f = open("log/server.log", mode="w")
+f = open("log/server.py.log", mode="w")
 f.close()
 logging.basicConfig(format="%(pathname)s \t %(message)s", filemode="w")
 log = logging.getLogger()
-log.addHandler(logging.FileHandler("log/server.log"))
+log.addHandler(logging.FileHandler("log/server.py.log"))
 log.setLevel(logging.DEBUG)
 
-server = Server(Config.host, port)
+server = ServerApp(Config.host, port)
 server.set_state(IdleState)
-# game = Game(None, None)
-
-server_thread = threading.Thread(target=server.listen)
-client_thread = threading.Thread(target=server.listen_clients)
-# game_thread = threading.Thread(target=game.update)
-
-# server.set_from_queue(game.events)
-
-server_thread.start()
-client_thread.start()
-
-# game_thread.start()
-server_thread.join()
-client_thread.join()
-# game_thread.join()
+server.run()
