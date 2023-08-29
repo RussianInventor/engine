@@ -65,7 +65,6 @@ class Connection:
 class App(ABC):
     def __init__(self, user_id, app):
         self.connections = {}
-        self.state = None
 
         self.input_messages = queue.PriorityQueue()
         self.output_messages = queue.PriorityQueue()
@@ -128,7 +127,7 @@ class Server(App):
             for client_id, conn in self.connections.items():
                 msg = read(conn)
                 logging.info(f'get msg from {client_id}: {msg.json()}')
-                self.state.handle_messages(msg=msg)
+                self.app.state.handle_messages(msg=msg)
 
     def new_connection(self, sock, address):
         msg = read(sock)

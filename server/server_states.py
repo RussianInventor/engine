@@ -23,8 +23,8 @@ class IdleState(State):
     def handle_messages(self, msg: messages.Message):
         logging.info(f'handle message: {msg.title}: {msg.content}')
         if msg.title == messages.MessageType.RUN_GAME:
-            with new_session() as session:
-                self.app.game = game.Game([msg.author], world.World.from_db(session, msg.content["world_id"]))
+            self.app.game = game.Game(self.app, [msg.author], msg.content["world_id"])
+            self.app.switch_state(GamingState)
         if msg.title == messages.MessageType.GET_WORLD:
             with new_session() as session:
                 q = session.query(model.World)

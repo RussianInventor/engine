@@ -1,7 +1,7 @@
 import threading
 
 from common.exchange import Server
-from server_states import State
+from .server_states import State
 
 
 class ServerApp:

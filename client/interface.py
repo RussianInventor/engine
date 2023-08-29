@@ -63,15 +63,15 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
 
     def delete_world(self):
         data = self.world_selection.currentData()
-        self.client.state.execute("delete_world", {"id": data, "owner": self.client.user.user_id})
+        self.app.state.execute("delete_world", {"id": data, "owner": self.app.exchanger.user.user_id})
         self.load_worlds()
 
     def create_world(self):
-        self.client.state.execute("create_world",
+        self.app.state.execute("create_world",
                                   {"name": self.world_name.text(),
                                    "type": "ground",
                                    "private": self.world_private.isChecked(),
-                                   "owner": self.client.user.user_id,
+                                   "owner": self.app.exchanger.user.user_id,
                                    "size": self.switch_size.currentData()})
         self.show_frame("idle_frame", self.load_worlds)
 
@@ -83,7 +83,7 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
     def connect(self):
         host = self.hostEntry.text()
         port = int(self.portEntry.text())
-        if self.client.connect(host, port, Config.id, Config.port):
+        if self.app.exchanger.connect(host, port, Config.id, Config.port):
             self.app.set_state(IdleState)
             self.show_frame('idle_frame', on_load=self.load_worlds)
         else:
@@ -100,7 +100,7 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
 
     def load_worlds(self):
         self.world_selection.clear()
-        for world in self.client.state.execute("get_world"):
+        for world in self.app.state.execute("get_world"):
             self.world_selection.addItem(world['name'], world['id'])
 
 

@@ -5,6 +5,7 @@ from common import game_utils
 from common import world
 from client import config
 from server.config import Config
+from common.data_base import new_session
 
 
 class Player:
@@ -89,9 +90,10 @@ class Game:
         self.messages = queue.PriorityQueue()
         self.keyboard = config.Keyboard()
 
-    def load_world(self, world_id):
-        # TODO read from server
-        return world.World(1)
+    @staticmethod
+    def load_world(world_id):
+        with new_session() as session:
+            return world.World.from_db(session, world_id)
 
     def update_pygame(self):
         pass
