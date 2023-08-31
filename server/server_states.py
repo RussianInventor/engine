@@ -34,6 +34,20 @@ class IdleState(State):
                 msg.answer(
                     content={"worlds": [{c.name: i.__getattribute__(c.name) for c in i.__table__.c} for i in worlds]})
                 # self.exchange.send_message(message.author, answer)
+        if msg.title == messages.MessageType.GET_WORLD_FULL_INFO:
+            with new_session() as session:
+                q = session.query(model.World)
+                q = q.filter(model.World.id == msg.content["world_id"])
+                world = q.first()
+                content = {"world": world.get_dict(), "chunks": [], "objects": []}
+                q = session.quary(model.Chunk)
+                q = q.filter(model.Chunk.world_id == msg.content["world_id"])
+                content["chunks"] = [i.get_dict() for i in q.all()]
+                q = session.quary(model.Object)
+                q = q.filter(model.Object.world_id == msg.content["world_id"])
+                content["objects"] = [i.get_dict() for i in q.all()]
+                msg.answer(content=content)
+
         if msg.title == messages.MessageType.CREATE_WORLD:
             world_id = str(uuid.uuid4())
             new_world = model.World(world_id)

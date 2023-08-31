@@ -10,6 +10,7 @@ class MessageType:
     CREATE_WORLD = "create_world"
     WORLD_LIST = "world_list"
     DELETE_WORLD = "delete_world"
+    GET_WORLD_FULL_INFO = "get_world_full_info"
 
 
 class Message:

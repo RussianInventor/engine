@@ -5,6 +5,12 @@ from sqlalchemy.dialects.postgresql import TEXT, TIMESTAMP, INTEGER, FLOAT, BOOL
 Base = declarative_base()
 
 
+class Item:
+    def get_dict(self):
+        print({col.name: getattr(self, col.name) for col in self.__table__.columns})
+        return {col.name: getattr(self, col.name) for col in self.__table__.columns}
+
+
 class Biome(Enum):
     FIELD = "field"
     MOUNTAINS = "mountains"
@@ -14,19 +20,19 @@ class Biome(Enum):
     MEGA_MOUNTAINS = "MEGA_MOUNTAINS"
 
 
-class WorldType(Base):
+class WorldType(Base, Item):
     __tablename__ = 'world_types'
     type = Column(TEXT, primary_key=True)
     description = Column(TEXT)
 
 
-class ChunkType(Base):
+class ChunkType(Base, Item):
     __tablename__ = "chunk_types"
     type = Column(TEXT, primary_key=True)
     description = Column(TEXT)
 
 
-class World(Base):
+class World(Base, Item):
     __tablename__ = 'worlds'
     id = Column(TEXT, primary_key=True)
     type = Column(TEXT, ForeignKey(WorldType.type))
@@ -40,7 +46,7 @@ class World(Base):
             self.__setattr__(key, val)
 
 
-class Chunk(Base):
+class Chunk(Base, Item):
     __tablename__ = "chunks"
     id = Column(TEXT, primary_key=True)
     world_id = Column(TEXT, ForeignKey(World.id))
@@ -54,7 +60,7 @@ class Chunk(Base):
         self.biome = biome.value
 
 
-class Object(Base):
+class Object(Base, Item):
     __tablename__ = "objects"
     id = Column(TEXT, primary_key=True)
     world_id = Column(TEXT, ForeignKey(World.id))

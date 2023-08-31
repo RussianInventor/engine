@@ -15,4 +15,5 @@ class Game:
         self.keyboard = config.Keyboard()
 
     def load_world(self, world_id):
-        world.
+        pass
+        #world.
