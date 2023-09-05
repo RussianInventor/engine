@@ -10,6 +10,10 @@ class Storable:
         json.dumps(self)
         return json
 
+    def from_json(self, data):
+        data = json.loads(data)
+
+
     def write(self):
         obj = vars(model)[self.__class__.__name__]()
 
