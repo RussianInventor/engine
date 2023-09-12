@@ -2,12 +2,13 @@ import logging
 import subprocess
 from common.config import Config as ComConfig
 from client.config import Config
-from .client_state import IdleState
+from .client_state import IdleState, GamingState
 from .graphic import draw_chunks
 from PyQt5.QtWidgets import QGraphicsScene
+from PyQt5.Qt import QThread
 from common import model
 from common.game import Game
-
+from client import graphic
 
 subprocess.call(("pyuic5",
                  "client/untitled.ui",
@@ -26,6 +27,18 @@ class Scene(QGraphicsScene):
             ComConfig.scale -= 0.1
 
 
+class GraphicThread(QThread):
+    def __init__(self, app):
+        super().__init__()
+        self.app = app
+
+    def run(self):
+        graphic.draw_chunks(self.app.interface.scene,
+                            self.app.game.world.chunks,
+                            ComConfig.scale)
+        self.msleep(10)
+
+
 class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
     def __init__(self, app):
         super().__init__()
@@ -37,6 +50,7 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.delete_button.clicked.connect(self.delete_world)
         self.play_button.clicked.connect(self.start_game)
 
+        self.graphic_thread = None
         self.scene = Scene()
         self.canvas.setScene(self.scene)
 
@@ -49,17 +63,16 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         if world_id is None:
             QtWidgets.QMessageBox(self, text="Выберите мир").show()
             return
-
         self.app.game = Game(self.app, players=[], world_id=world_id)
-
+        # self.app.state.execute("run_game", kwargs={'world_id': world_id})
+        self.app.set_state(GamingState)
 
         # with new_session() as session:
         #     chunks = session.query(model.Chunk).filter(model.Chunk.world_id == data).all()
         # draw_chunks(self.scene, chunks, ComConfig.scale)
         self.show_frame("game_frame")
-
-    def draw_all(self):
-        draw_chunks(self.scene, chunks, ComConfig.scale)
+        self.graphic_thread = GraphicThread(self.app)
+        self.graphic_thread.start()
 
     def delete_world(self):
         data = self.world_selection.currentData()
@@ -68,11 +81,11 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
 
     def create_world(self):
         self.app.state.execute("create_world",
-                                  {"name": self.world_name.text(),
-                                   "type": "ground",
-                                   "private": self.world_private.isChecked(),
-                                   "owner": self.app.exchanger.user.user_id,
-                                   "size": self.switch_size.currentData()})
+                               {"name": self.world_name.text(),
+                                "type": "ground",
+                                "private": self.world_private.isChecked(),
+                                "owner": self.app.exchanger.user.user_id,
+                                "size": self.switch_size.currentData()})
         self.show_frame("idle_frame", self.load_worlds)
 
     def new_world_setting(self):

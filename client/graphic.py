@@ -14,11 +14,12 @@ chunk_color = {"field": (0, 200, 0),
 
 def draw_chunks(scene: QGraphicsScene, chunks, scale):
     size = Config.CHUNK_SIZE * scale
-    for chu in chunks:
-        scene.addRect(chu.x*size, chu.y*size, size, size,
-                      pen=QColor(*chunk_color[chu.biome]),
-                      #brush=QBrush(Qt.BrushStyle.SolidPattern))
-                      brush=QColor(*chunk_color[chu.biome]))
+    for row in chunks:
+        for chu in row:
+            scene.addRect(chu.x*size, chu.y*size, size, size,
+                          pen=QColor(*chunk_color[chu.biome]),
+                          #brush=QBrush(Qt.BrushStyle.SolidPattern))
+                          brush=QColor(*chunk_color[chu.biome]))
 
 
 def test(scene: QGraphicsScene):

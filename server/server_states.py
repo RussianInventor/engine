@@ -2,12 +2,11 @@ import logging
 import traceback
 from abc import ABC, abstractmethod
 from common.exchange import messages
-from common import model, game, world
+from common import model, game, world as world_base
 from sqlalchemy import or_
 import uuid
-from common.data_base import new_session
+from server.data_base import new_session
 from common.utils import procedure_generation
-from common.config import Config
 
 
 class State(ABC):
@@ -23,8 +22,12 @@ class IdleState(State):
     def handle_messages(self, msg: messages.Message):
         logging.info(f'handle message: {msg.title}: {msg.content}')
         if msg.title == messages.MessageType.RUN_GAME:
+            with new_session() as session:
+                world = world_base.World.from_db(session, msg.content["world_id"])
             self.app.game = game.Game(self.app, [msg.author], msg.content["world_id"])
-            self.app.switch_state(GamingState)
+            self.app.game.world = world
+            msg.answer({'status': 'OK'})
+            self.app.set_state(GamingState)
         if msg.title == messages.MessageType.GET_WORLD:
             with new_session() as session:
                 q = session.query(model.World)
@@ -34,19 +37,6 @@ class IdleState(State):
                 msg.answer(
                     content={"worlds": [{c.name: i.__getattribute__(c.name) for c in i.__table__.c} for i in worlds]})
                 # self.exchange.send_message(message.author, answer)
-        if msg.title == messages.MessageType.GET_WORLD_FULL_INFO:
-            with new_session() as session:
-                q = session.query(model.World)
-                q = q.filter(model.World.id == msg.content["world_id"])
-                world = q.first()
-                content = {"world": world.get_dict(), "chunks": [], "objects": []}
-                q = session.quary(model.Chunk)
-                q = q.filter(model.Chunk.world_id == msg.content["world_id"])
-                content["chunks"] = [i.get_dict() for i in q.all()]
-                q = session.quary(model.Object)
-                q = q.filter(model.Object.world_id == msg.content["world_id"])
-                content["objects"] = [i.get_dict() for i in q.all()]
-                msg.answer(content=content)
 
         if msg.title == messages.MessageType.CREATE_WORLD:
             world_id = str(uuid.uuid4())
@@ -87,4 +77,17 @@ class IdleState(State):
 
 class GamingState(State):
     def handle_messages(self, msg: messages.Message):
-        pass
+        if msg.title == messages.MessageType.GET_WORLD_FULL_INFO:
+            with new_session() as session:
+                q = session.query(model.World)
+                q = q.filter(model.World.id == msg.content["world_id"])
+                world = q.first()
+                content = {"world": world.get_dict(), "chunks": [], "objects": []}
+                q = session.query(model.Chunk)
+                q = q.filter(model.Chunk.world_id == msg.content["world_id"])
+                q = q.order_by(model.Chunk.y, model.Chunk.x)
+                content["chunks"] = [i.get_dict() for i in q.all()]
+                q = session.query(model.Object)
+                q = q.filter(model.Object.world_id == msg.content["world_id"])
+                content["objects"] = [i.get_dict() for i in q.all()]
+                msg.answer(content=content)

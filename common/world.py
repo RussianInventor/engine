@@ -13,7 +13,6 @@ class Storable:
     def from_json(self, data):
         data = json.loads(data)
 
-
     def write(self):
         obj = vars(model)[self.__class__.__name__]()
 
@@ -31,7 +30,7 @@ class Chunk(Storable):
         self.biome = biome
 
     @classmethod
-    def from_db(cls, chunk):
+    def load(cls, chunk):
         return cls(id=chunk.id, x=chunk.x, y=chunk.y, biome=chunk.biome)
 
     def add_obj(self, obj):
@@ -51,24 +50,31 @@ class World(Storable):
         self.type = type
 
     @classmethod
-    def from_db(cls, session, world_id):
-        world = session.query(model.World).filter(model.World.id == world_id).first()
-        new_world = cls(world.type)
-        chunks = session.query(model.Chunk).filter(model.Chunk.world_id == world_id).order_by(model.Chunk.y.asc(),
-                                                                                              model.Chunk.x.asc()).all()
-        for chunk in chunks:
+    def load(cls, world_obj, chunks_objs, object_objs):
+        new_world = cls(world_obj.type)
+        for chunk in chunks_objs:
             if len(new_world.chunks) == chunk.y:
                 new_world.chunks.append([])
-            new_world.chunks[-1].append(Chunk.from_db(chunk))
-        objs = session.query(model.Object).filter(model.Object.world_id == world_id).all()
+            new_world.chunks[-1].append(Chunk.load(chunk))
 
         clses = vars(game_objects)
-        for obj in objs:
+        for obj in object_objs:
             cur_cls = clses[obj.cls]
             g_obj = cur_cls.from_json(obj.data)
             x, y = g_obj.chunk_indexes()
             new_world.chunks[y][x].add_obj(obj)
         return new_world
+
+    @classmethod
+    def from_db(cls, session, world_id):
+        world_obj = session.query(model.World).filter(model.World.id == world_id).first()
+        chunk_objs = session.query(model.Chunk).filter(model.Chunk.world_id == world_id).order_by(model.Chunk.y.asc(),
+                                                                                                  model.Chunk.x.asc()).all()
+        object_objs = session.query(model.Object).filter(model.Object.world_id == world_id).all()
+
+        return cls.load(world_obj=world_obj,
+                        chunks_objs=chunk_objs,
+                        object_objs=object_objs)
 
     def time_steps(self):
         self.time += 1

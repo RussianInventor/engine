@@ -3,8 +3,8 @@ import common.model as model
 from common.model import *
 from sqlalchemy.orm import Session
 
-postgres_url = 'postgresql://postgres:1133s1133@localhost/postgres'
-game_url = 'postgresql://postgres:1133s1133@localhost/game'
+postgres_url = 'postgresql://postgres:skiv3011@localhost/postgres'
+game_url = 'postgresql://postgres:skiv3011@localhost/game'
 engine = create_engine(postgres_url)
 try:
     connection = engine.connect()

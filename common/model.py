@@ -7,7 +7,6 @@ Base = declarative_base()
 
 class Item:
     def get_dict(self):
-        print({col.name: getattr(self, col.name) for col in self.__table__.columns})
         return {col.name: getattr(self, col.name) for col in self.__table__.columns}
 
 
@@ -66,3 +65,8 @@ class Object(Base, Item):
     world_id = Column(TEXT, ForeignKey(World.id))
     data = Column(JSON)
     cls = Column(TEXT)
+
+    def __init__(self, id, world_id, data, cls):
+        super().__init__()
+        for key, val in locals().items():
+            self.__setattr__(key, val)

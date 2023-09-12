@@ -14,6 +14,10 @@ class ClientApp:
 
         self.state = None
 
+    @property
+    def user(self):
+        return self.exchanger.user
+
     def run(self):
         self.interface.start()
         sys.exit(self.qt_app.exec_())

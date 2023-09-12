@@ -1,7 +1,7 @@
 from . import model
 from .config import Config
 import random
-from .data_base import new_session
+from server.data_base import new_session
 
 
 def expansion(chunks, biome, x, y, num, world):

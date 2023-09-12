@@ -1,11 +1,10 @@
 import queue
 import time
-import pygame
 from common import game_utils
 from common import world
 from client import config
-from server.config import Config
-from common.data_base import new_session
+# from server.config import Config
+# from server.data_base import new_session
 
 
 class Player:
@@ -84,16 +83,17 @@ class Game:
 
     def __init__(self, app, players, world_id):
         self.app = app
-        self.world = self.load_world(world_id)
+        self.world_id = world_id
+        self.world = None
         self.players = players
         self.events = queue.PriorityQueue()
         self.messages = queue.PriorityQueue()
         self.keyboard = config.Keyboard()
 
-    @staticmethod
-    def load_world(world_id):
-        with new_session() as session:
-            return world.World.from_db(session, world_id)
+    # @staticmethod
+    # def load_world(world_id):
+    #     with new_session() as session:
+    #         return world.World.from_db(session, world_id)
 
     def update_pygame(self):
         pass
@@ -110,5 +110,5 @@ class Game:
                 for creature in chunk.creatures:
                     print(creature.x, creature.y)
             duration = time.time() - start_time
-            if duration < Config.tick_duration:
-                time.sleep(Config.tick_duration - duration)
+            # if duration < Config.tick_duration:
+            #     time.sleep(Config.tick_duration - duration)
