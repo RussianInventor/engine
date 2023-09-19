@@ -2,9 +2,10 @@ from sqlalchemy import create_engine, exc
 import common.model as model
 from common.model import *
 from sqlalchemy.orm import Session
+from .config import Config
 
-postgres_url = 'postgresql://postgres:skiv3011@localhost/postgres'
-game_url = 'postgresql://postgres:skiv3011@localhost/game'
+postgres_url = Config.db_url
+game_url = Config.game_db_url
 engine = create_engine(postgres_url)
 try:
     connection = engine.connect()
