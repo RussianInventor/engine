@@ -33,10 +33,9 @@ class GraphicThread(QThread):
         self.app = app
 
     def run(self):
-        graphic.draw_chunks(self.app.interface.scene,
-                            self.app.game.world.chunks,
-                            ComConfig.scale)
-        self.msleep(10)
+        graphic.draw_chunks(scene=self.app.interface.scene,
+                            chunks=self.app.game.world.chunks,
+                            scale=ComConfig.scale)
 
 
 class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
