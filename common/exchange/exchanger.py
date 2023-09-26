@@ -119,7 +119,7 @@ class Server(App):
                 logging.debug(f'accept {address}')
                 self.new_connection(sock, address)
             except Exception as error:
-                print(error)
+                pass
 
     def listen_clients(self):
         logging.debug('listen clients')

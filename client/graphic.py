@@ -16,14 +16,14 @@ def draw_chunks(scene: QGraphicsScene, chunks, scale):
     size = Config.CHUNK_SIZE * scale
     for row in chunks:
         for chu in row:
-            scene.addRect(chu.x*size, chu.y*size, size, size,
+            scene.addRect(chu.x * size, chu.y * size, size, size,
                           pen=QColor(*chunk_color[chu.biome]),
-                          #brush=QBrush(Qt.BrushStyle.SolidPattern))
+                          # brush=QBrush(Qt.BrushStyle.SolidPattern))
                           brush=QColor(*chunk_color[chu.biome]))
+    scene.update()
 
 
 def test(scene: QGraphicsScene):
     scene.addRect(100, 10, 25, 35,
                   pen=QPen(Qt.PenStyle.SolidLine),
                   brush=QBrush(Qt.BrushStyle.CrossPattern))
-
