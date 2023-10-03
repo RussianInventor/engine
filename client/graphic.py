@@ -1,5 +1,6 @@
 import pygame
 from common.config import Config
+
 chunk_color = {"field": (0, 200, 0),
                "mountains": (50, 0, 0),
                "beach": (250, 250, 0),
@@ -10,41 +11,90 @@ chunk_color = {"field": (0, 200, 0),
 
 
 class Camera:
-    def __init__(self, x, y):
+    step = 10
+    size = 100
+
+    def __init__(self, x, y, screen_x=None, screen_y=None):
+        self.scale = Config.scale
         self.x = x
         self.y = y
-        self.scale = Config.scale
+        self.size = self.scaled(self.size)
+
+        self.screen_x = screen_x if screen_x is not None else x
+        self.screen_y = screen_y if screen_y is not None else y
+
+    def set_scale(self, delta):
+        self.scale += delta
+        if self.scale > Config.max_scale:
+            self.scale = Config.max_scale
+        if self.scale < Config.min_scale:
+            self.scale = Config.min_scale
+
+    @property
+    def shift_x(self):
+        return self.scaled(-self.x)
+
+    @property
+    def shift_y(self):
+        return self.scaled(-self.y)
 
     def pos_shift(self, x, y):
-        x = (x - self.x) * self.scale
-        y = (y - self.y) * self.scale
+        x = self.scaled(x) + self.shift_x
+        y = self.scaled(y) + self.shift_y
         return x, y
+
+    def scaled(self, n):
+        return self.scale * n
+
+    def down(self):
+        self.y -= self.step
+
+    def up(self):
+        self.y += self.step
+
+    def right(self):
+        self.x += self.step
+
+    def left(self):
+        self.x -= self.step
 
 
 class DrawWorld:
     def __init__(self, app):
-        self.camera = Camera(x=len(app.game.world.chunks[0]), y=len(app.game.world.chunks))
+        self.camera = None
         self.app = app
         pygame.init()
         self.screen = pygame.display.set_mode((0, 0))
 
     def update(self):
+        self.camera = Camera(x=len(self.app.game.world.chunks)/2,
+                             y=len(self.app.game.world.chunks)/2)
         while True:
             self.screen.fill((255, 255, 255))
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEWHEEL:
-                    Config.set_scale(event.y*0.1)
+                    self.camera.set_scale(event.y * 0.1)
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         pygame.display.quit()
+                    if event.key == pygame.K_DOWN:
+                        self.camera.down()
+                    if event.key == pygame.K_UP:
+                        self.camera.up()
+                    if event.key == pygame.K_RIGHT:
+                        self.camera.right()
+                    if event.key == pygame.K_LEFT:
+                        self.camera.left()
+
             self.draw_chunks(self.app.game.world.chunks)
             pygame.display.update()
 
     def draw_chunks(self, chunks):
-        size = (Config.CHUNK_SIZE * self.camera.scale) + 1
+        size = self.camera.scaled(Config.CHUNK_SIZE)
         for row in chunks:
             for chu in row:
+                x, y = self.camera.pos_shift(chu.x, chu.y)
                 pygame.draw.rect(self.screen,
                                  chunk_color[chu.biome],
-                                 pygame.Rect(*self.camera.pos_shift(chu.x, chu.y), size, size),
+                                 pygame.Rect(x*size, y*size, size, size),
                                  width=0)
