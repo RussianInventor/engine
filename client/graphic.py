@@ -1,8 +1,5 @@
-from PyQt5.QtGui import QPen, QBrush, QColor
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QGraphicsScene
+import pygame
 from common.config import Config
-
 chunk_color = {"field": (0, 200, 0),
                "mountains": (50, 0, 0),
                "beach": (250, 250, 0),
@@ -12,18 +9,42 @@ chunk_color = {"field": (0, 200, 0),
                }
 
 
-def draw_chunks(scene: QGraphicsScene, chunks, scale):
-    size = Config.CHUNK_SIZE * scale
-    for row in chunks:
-        for chu in row:
-            scene.addRect(chu.x * size, chu.y * size, size, size,
-                          pen=QColor(*chunk_color[chu.biome]),
-                          # brush=QBrush(Qt.BrushStyle.SolidPattern))
-                          brush=QColor(*chunk_color[chu.biome]))
-    scene.update()
+class Camera:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.scale = Config.scale
+
+    def pos_shift(self, x, y):
+        x = (x - self.x) * self.scale
+        y = (y - self.y) * self.scale
+        return x, y
 
 
-def test(scene: QGraphicsScene):
-    scene.addRect(100, 10, 25, 35,
-                  pen=QPen(Qt.PenStyle.SolidLine),
-                  brush=QBrush(Qt.BrushStyle.CrossPattern))
+class DrawWorld:
+    def __init__(self, app):
+        self.camera = Camera(x=len(app.game.world.chunks[0]), y=len(app.game.world.chunks))
+        self.app = app
+        pygame.init()
+        self.screen = pygame.display.set_mode((0, 0))
+
+    def update(self):
+        while True:
+            self.screen.fill((255, 255, 255))
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEWHEEL:
+                    Config.set_scale(event.y*0.1)
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        pygame.display.quit()
+            self.draw_chunks(self.app.game.world.chunks)
+            pygame.display.update()
+
+    def draw_chunks(self, chunks):
+        size = (Config.CHUNK_SIZE * self.camera.scale) + 1
+        for row in chunks:
+            for chu in row:
+                pygame.draw.rect(self.screen,
+                                 chunk_color[chu.biome],
+                                 pygame.Rect(*self.camera.pos_shift(chu.x, chu.y), size, size),
+                                 width=0)

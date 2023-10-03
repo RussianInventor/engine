@@ -1,4 +1,5 @@
 import time
+import threading
 from abc import ABC
 from collections import namedtuple
 from common.model import Object
@@ -78,6 +79,7 @@ class IdleState(State):
 class GamingState(State):
     def __init__(self, app):
         super().__init__(app)
+        self.draw_world = graphic.DrawWorld(self.app)
         new_message = messages.Message(connection=self.exchanger.connection,
                                        title=messages.MessageType.RUN_GAME,
                                        time=time.time(),
@@ -99,5 +101,6 @@ class GamingState(State):
                                                       chunks_objs=[Chunk(**c) for c in answer.content['chunks']],
                                                       object_objs=[Object(**o) for o in answer.content['objects']])
 
-    def graphic_update(self):
-        pass
+    def run_thread(self):
+        thread = threading.Thread(target=self.draw_world.update)
+        return thread

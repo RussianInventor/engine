@@ -3,7 +3,6 @@ import subprocess
 from common.config import Config as ComConfig
 from client.config import Config
 from .client_state import IdleState, GamingState
-from .graphic import draw_chunks
 from PyQt5.QtWidgets import QGraphicsScene
 from PyQt5.Qt import QThread
 from common import model
@@ -69,8 +68,10 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         # with new_session() as session:
         #     chunks = session.query(model.Chunk).filter(model.Chunk.world_id == data).all()
         # draw_chunks(self.scene, chunks, ComConfig.scale)
-        self.show_frame("game_frame")
-        self.graphic_thread = GraphicThread(self.app)
+        #self.show_frame("game_frame")
+        # self.graphic_thread = GraphicThread(self.app)
+        # self.graphic_thread.start()
+        self.graphic_thread = self.app.state.execute("run_thread")
         self.graphic_thread.start()
 
     def delete_world(self):
