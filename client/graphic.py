@@ -11,7 +11,7 @@ chunk_color = {"field": (0, 200, 0),
 
 
 class Camera:
-    step = 10
+    _step = 10
     size = 100
 
     def __init__(self, x, y, screen_x=None, screen_y=None):
@@ -32,19 +32,23 @@ class Camera:
 
     @property
     def shift_x(self):
-        return self.scaled(-self.x)
+        return -self.x
 
     @property
     def shift_y(self):
-        return self.scaled(-self.y)
+        return -self.y
 
     def pos_shift(self, x, y):
-        x = self.scaled(x) + self.shift_x
-        y = self.scaled(y) + self.shift_y
+        x = x + self.shift_x
+        y = y + self.shift_y
         return x, y
 
     def scaled(self, n):
         return self.scale * n
+
+    @property
+    def step(self):
+        return self._step/self.scale
 
     def down(self):
         self.y -= self.step
@@ -53,10 +57,10 @@ class Camera:
         self.y += self.step
 
     def right(self):
-        self.x += self.step
+        self.x -= self.step
 
     def left(self):
-        self.x -= self.step
+        self.x += self.step
 
 
 class DrawWorld:
