@@ -2,6 +2,68 @@ from . import model
 from .config import Config
 import random
 from server.data_base import new_session
+import math
+
+
+def is_inside(x, y, points):
+    x1 = x
+    x2 = x + 1000000
+    y1 = y
+    y2 = y + 1000000
+    inter = 0
+    for i in range(len(points)):
+        x3 = points[i][0]
+        x4 = points[i-1][0]
+        y3 = points[i][1]
+        y4 = points[i-1][1]
+        u_down = ((y4-y3)*(x2-x1))-((x4-x3)*(y2-y1))
+        if u_down == 0:
+            continue
+        u_up = ((x4 - x3)*(y1 - y3) - ((y4 - y3)*(x1 - x3)))
+        u = u_up / u_down
+        x = x1 + u*(x2 - x1)
+        y = y1 + u*(y2 - y1)
+        if max(x3, x4) > x > min(x4, x3) and max(y3, y4) > y > min(y4, y3):
+            inter += 1
+    if x % 2 == 0:
+        return False
+    return True
+
+
+def stain_points(radius, x, y):
+    points = []
+    angle = 360
+    while angle > 0:
+        if angle < 180:
+            new_ang = random.randint(1, angle)
+        else:
+            new_ang = random.randint(1, int(angle/3))
+        angle -= new_ang
+        rad = random.randint(int(radius/2), int(radius*1.5))
+        new_x = math.cos(math.radians(new_ang)) * rad
+        new_y = math.sin(math.radians(new_ang)) * rad
+        points.append((new_x + x, new_y + y))
+    return points
+
+
+def stain(chunks, biome, x, y, radius):
+    ar = 0
+    points = stain_points(radius, x, y)
+    min_x = min(points, key=lambda i: i[0])[0] // Config.CHUNK_SIZE
+    max_x = max(points, key=lambda i: i[0])[0] // Config.CHUNK_SIZE
+    min_y = min(points, key=lambda i: i[1])[1] // Config.CHUNK_SIZE
+    max_y = max(points, key=lambda i: i[1])[1] // Config.CHUNK_SIZE
+    max_x = min(max_x, len(chunks[0]))
+    min_y = max(min_y, 0)
+    min_x = max(min_x, 0)
+    max_y = min(max_y, len(chunks))
+    for y in range(min_y, max_y):
+        for x in range(min_x, max_x):
+            chunk = filter(lambda c: c.x == x and c.y == y, chunks).__next__()
+            if is_inside(chunk.x, chunk.y, points):
+                chunk.biome = biome
+                ar += 1
+    return ar
 
 
 def expansion(chunks, biome, x, y, num, world):
@@ -50,13 +112,9 @@ def procedure_generation(world: model.World):
             water_size -= 1
             expansion(chunks=chunks, biome=model.Biome.WATER, x=x, y=y, num=water_size, world=world)
         while desert_num > 1:
-            desert_size = get_biome_size("desert", static_desert_num)
-            x = random.randint(1, world.size - 2)
-            y = random.randint(1, world.size - 2)
-            filter(lambda c: c.x == x and c.y == y, chunks).__next__().biome = model.Biome.DESERT.value
-            desert_num -= desert_size
-            desert_size -= 1
-            expansion(chunks=chunks, biome=model.Biome.DESERT, x=x, y=y, num=desert_size, world=world)
+            desert_num -= stain(chunks=chunks, biome="desert", x=random.randint(0, world.size),
+                                y=random.randint(0, world.size),
+                                radius=math.sqrt(get_biome_size("desert", static_desert_num)/math.pi))
         while mountains_num > 1:
             mountains_size = get_biome_size("mountains", static_mountains_num)
             x = random.randint(1, world.size - 2)
