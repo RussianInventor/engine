@@ -3,6 +3,7 @@ from .config import Config
 import random
 from server.data_base import new_session
 import math
+from .world import World
 
 
 def is_inside(x, y, points):
@@ -48,20 +49,19 @@ def stain_points(radius, x, y):
 
 def stain(chunks, biome, x, y, radius):
     ar = 0
-    points = stain_points(radius, x, y)
+    points = stain_points(radius*Config.CHUNK_SIZE, x, y)
     min_x = min(points, key=lambda i: i[0])[0] // Config.CHUNK_SIZE
     max_x = max(points, key=lambda i: i[0])[0] // Config.CHUNK_SIZE
     min_y = min(points, key=lambda i: i[1])[1] // Config.CHUNK_SIZE
     max_y = max(points, key=lambda i: i[1])[1] // Config.CHUNK_SIZE
-    max_x = min(max_x, len(chunks[0]))
-    min_y = max(min_y, 0)
-    min_x = max(min_x, 0)
-    max_y = min(max_y, len(chunks))
-    for y in range(min_y, max_y):
-        for x in range(min_x, max_x):
-            chunk = filter(lambda c: c.x == x and c.y == y, chunks).__next__()
-            if is_inside(chunk.x, chunk.y, points):
-                chunk.biome = biome
+    max_x = int(min(max_x, len(chunks[0])))
+    min_y = int(max(min_y, 0))
+    min_x = int(max(min_x, 0))
+    max_y = int(min(max_y, len(chunks)))
+    for c_y in range(min_y, max_y):
+        for c_x in range(min_x, max_x):
+            if is_inside(chunks[c_y][c_x].x*Config.CHUNK_SIZE, chunks[c_y][c_x].y*Config.CHUNK_SIZE, points):
+                chunks[c_y][c_x].biome = biome
                 ar += 1
     return ar
 
@@ -95,7 +95,9 @@ def get_biome_size(biome_type, static_biome_num):
 
 def procedure_generation(world: model.World):
     with new_session() as session:
-        chunks = session.query(model.Chunk).filter(model.Chunk.world_id == world.id).all()
+        chunks = session.query(model.Chunk).filter(model.Chunk.world_id == world.id).order_by(model.Chunk.y,
+                                                                                              model.Chunk.x).all()
+        game_world = World.load(world, chunks, [])
         chunks_num = len(chunks)
         water_num = int((chunks_num * (Config.world_percents["water"]) / 100))
         static_water_num = water_num
@@ -103,26 +105,26 @@ def procedure_generation(world: model.World):
         static_mountains_num = mountains_num
         desert_num = int(chunks_num * (Config.world_percents["desert"] / 100))
         static_desert_num = desert_num
-        while water_num > 1:
-            water_size = get_biome_size("water", static_water_num)
-            x = random.randint(1, world.size - 2)
-            y = random.randint(1, world.size - 2)
-            filter(lambda c: c.x == x and c.y == y, chunks).__next__().biome = model.Biome.WATER.value
-            water_num -= water_size
-            water_size -= 1
-            expansion(chunks=chunks, biome=model.Biome.WATER, x=x, y=y, num=water_size, world=world)
+        # while water_num > 1:
+        #     water_size = get_biome_size("water", static_water_num)
+        #     x = random.randint(1, world.size - 2)
+        #     y = random.randint(1, world.size - 2)
+        #     filter(lambda c: c.x == x and c.y == y, chunks).__next__().biome = model.Biome.WATER.value
+        #     water_num -= water_size
+        #     water_size -= 1
+        #     expansion(chunks=chunks, biome=model.Biome.WATER, x=x, y=y, num=water_size, world=world)
         while desert_num > 1:
-            desert_num -= stain(chunks=chunks, biome="desert", x=random.randint(0, world.size),
+            desert_num -= stain(chunks=game_world.chunks, biome="desert", x=random.randint(0, world.size),
                                 y=random.randint(0, world.size),
                                 radius=math.sqrt(get_biome_size("desert", static_desert_num)/math.pi))
-        while mountains_num > 1:
-            mountains_size = get_biome_size("mountains", static_mountains_num)
-            x = random.randint(1, world.size - 2)
-            y = random.randint(1, world.size - 2)
-            filter(lambda c: c.x == x and c.y == y, chunks).__next__().biome = model.Biome.MOUNTAINS.value
-            mountains_num -= mountains_size
-            mountains_size -= 1
-            expansion(chunks=chunks, biome=model.Biome.MOUNTAINS, x=x, y=y, num=mountains_size, world=world)
+        # while mountains_num > 1:
+        #     mountains_size = get_biome_size("mountains", static_mountains_num)
+        #     x = random.randint(1, world.size - 2)
+        #     y = random.randint(1, world.size - 2)
+        #     filter(lambda c: c.x == x and c.y == y, chunks).__next__().biome = model.Biome.MOUNTAINS.value
+        #     mountains_num -= mountains_size
+        #     mountains_size -= 1
+        #     expansion(chunks=chunks, biome=model.Biome.MOUNTAINS, x=x, y=y, num=mountains_size, world=world)
         session.commit()
     with new_session() as session:
         chunks = session.query(model.Chunk).filter(model.Chunk.world_id == world.id).all()
