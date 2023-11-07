@@ -8,9 +8,9 @@ from .world import World
 
 def is_inside(x, y, points):
     x1 = x
-    x2 = x + 1000000
+    x2 = x + random.choice((10000, -10000, 1000, -1000))
     y1 = y
-    y2 = y + 1000000
+    y2 = y + random.choice((10000, -10000, 1000, -1000))
     inter = 0
     for i in range(len(points)):
         x3 = points[i][0]
@@ -26,7 +26,7 @@ def is_inside(x, y, points):
         y = y1 + u*(y2 - y1)
         if max(x3, x4) > x > min(x4, x3) and max(y3, y4) > y > min(y4, y3):
             inter += 1
-    if x % 2 == 0:
+    if inter % 2 == 0:
         return False
     return True
 
@@ -52,8 +52,8 @@ def stain(chunks, biome, x, y, radius):
     points = stain_points(radius*Config.CHUNK_SIZE, x, y)
     min_x = min(points, key=lambda i: i[0])[0] // Config.CHUNK_SIZE
     max_x = max(points, key=lambda i: i[0])[0] // Config.CHUNK_SIZE
-    min_y = min(points, key=lambda i: i[1])[1] // Config.CHUNK_SIZE
-    max_y = max(points, key=lambda i: i[1])[1] // Config.CHUNK_SIZE
+    min_y = min(points, key=lambda i: i[0])[1] // Config.CHUNK_SIZE
+    max_y = max(points, key=lambda i: i[0])[1] // Config.CHUNK_SIZE
     max_x = int(min(max_x, len(chunks[0])))
     min_y = int(max(min_y, 0))
     min_x = int(max(min_x, 0))
@@ -62,6 +62,7 @@ def stain(chunks, biome, x, y, radius):
         for c_x in range(min_x, max_x):
             if is_inside(chunks[c_y][c_x].x*Config.CHUNK_SIZE, chunks[c_y][c_x].y*Config.CHUNK_SIZE, points):
                 chunks[c_y][c_x].biome = biome
+                print(chunks[c_y][c_x].biome)
                 ar += 1
     return ar
 
