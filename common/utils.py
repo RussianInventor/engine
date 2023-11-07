@@ -8,9 +8,9 @@ from .world import World
 
 def is_inside(x, y, points):
     x1 = x
-    x2 = x + random.choice((10000, -10000, 1000, -1000))
+    x2 = x + 1000000
     y1 = y
-    y2 = y + random.choice((10000, -10000, 1000, -1000))
+    y2 = y
     inter = 0
     for i in range(len(points)):
         x3 = points[i][0]
@@ -20,11 +20,11 @@ def is_inside(x, y, points):
         u_down = ((y4-y3)*(x2-x1))-((x4-x3)*(y2-y1))
         if u_down == 0:
             continue
-        u_up = ((x4 - x3)*(y1 - y3) - ((y4 - y3)*(x1 - x3)))
-        u = u_up / u_down
-        x = x1 + u*(x2 - x1)
-        y = y1 + u*(y2 - y1)
-        if max(x3, x4) > x > min(x4, x3) and max(y3, y4) > y > min(y4, y3):
+        u_up_a = ((x4 - x3)*(y1 - y3) - ((y4 - y3)*(x1 - x3)))
+        u_up_b = ((x2 - x1)*(y1 - y3) - ((y2 - y1)*(x1 - x3)))
+        ua = u_up_a / u_down
+        ub = u_up_b / u_down
+        if 0 <= ua <= 1 and 0 <= ub <= 1:
             inter += 1
     if inter % 2 == 0:
         return False
@@ -52,8 +52,8 @@ def stain(chunks, biome, x, y, radius):
     points = stain_points(radius*Config.CHUNK_SIZE, x, y)
     min_x = min(points, key=lambda i: i[0])[0] // Config.CHUNK_SIZE
     max_x = max(points, key=lambda i: i[0])[0] // Config.CHUNK_SIZE
-    min_y = min(points, key=lambda i: i[0])[1] // Config.CHUNK_SIZE
-    max_y = max(points, key=lambda i: i[0])[1] // Config.CHUNK_SIZE
+    min_y = min(points, key=lambda i: i[1])[1] // Config.CHUNK_SIZE
+    max_y = max(points, key=lambda i: i[1])[1] // Config.CHUNK_SIZE
     max_x = int(min(max_x, len(chunks[0])))
     min_y = int(max(min_y, 0))
     min_x = int(max(min_x, 0))
@@ -118,6 +118,8 @@ def procedure_generation(world: model.World):
             desert_num -= stain(chunks=game_world.chunks, biome="desert", x=random.randint(0, world.size),
                                 y=random.randint(0, world.size),
                                 radius=math.sqrt(get_biome_size("desert", static_desert_num)/math.pi))
+            print('>>>>>>>>>>>>>>>>>', game_world.chunks)
+            game_world.save(session)
         # while mountains_num > 1:
         #     mountains_size = get_biome_size("mountains", static_mountains_num)
         #     x = random.randint(1, world.size - 2)

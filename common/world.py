@@ -1,6 +1,6 @@
 import json
 from common import model
-from sqlalchemy import and_
+from sqlalchemy import and_, insert
 from . import game_objects
 from common.config import Config
 
@@ -41,7 +41,8 @@ class Chunk(Storable):
 
 
 class World(Storable):
-    def __init__(self, type):
+    def __init__(self, type, id):
+        self.id = id
         self.chunks = []
         self.time = 0
         self.max_day_time = 2400
@@ -51,7 +52,7 @@ class World(Storable):
 
     @classmethod
     def load(cls, world_obj, chunks_objs, object_objs):
-        new_world = cls(world_obj.type)
+        new_world = cls(world_obj.type, id=world_obj.id)
         for chunk in chunks_objs:
             if len(new_world.chunks) == chunk.y:
                 new_world.chunks.append([])
@@ -64,6 +65,13 @@ class World(Storable):
             x, y = g_obj.chunk_indexes()
             new_world.chunks[y][x].add_obj(obj)
         return new_world
+
+    def save(self, session):
+        chunks = session.query(model.Chunk).filter(model.Chunk.world_id == self.id).all()
+        for chunk in chunks:
+            game_chunk = self.chunks[chunk.y][chunk.x]
+            chunk.biome = game_chunk.biome
+        # TODO такую же штуку для objects
 
     @classmethod
     def from_db(cls, session, world_id):

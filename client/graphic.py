@@ -24,6 +24,7 @@ class Camera:
         self.screen_y = screen_y if screen_y is not None else y
 
     def set_scale(self, delta):
+        delta = round(delta, 2)
         self.scale += delta
         if self.scale > Config.max_scale:
             self.scale = Config.max_scale
@@ -100,5 +101,5 @@ class DrawWorld:
                 x, y = self.camera.pos_shift(chu.x, chu.y)
                 pygame.draw.rect(self.screen,
                                  chunk_color[chu.biome],
-                                 pygame.Rect(x*size, y*size, size, size),
+                                 pygame.Rect(x*size, y*size, size+1, size+1),
                                  width=0)
