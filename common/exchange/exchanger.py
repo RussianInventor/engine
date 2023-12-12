@@ -90,8 +90,6 @@ class App(ABC):
         return connection.read()
 
 
-
-
 class Server(App):
     port_num = 4000
     backlog = 10
