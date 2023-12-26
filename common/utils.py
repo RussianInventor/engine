@@ -1,3 +1,5 @@
+import pygame.display
+
 from . import model
 from .config import Config
 import random
@@ -14,14 +16,14 @@ def is_inside(x, y, points):
     inter = 0
     for i in range(len(points)):
         x3 = points[i][0]
-        x4 = points[i-1][0]
+        x4 = points[i - 1][0]
         y3 = points[i][1]
-        y4 = points[i-1][1]
-        u_down = ((y4-y3)*(x2-x1))-((x4-x3)*(y2-y1))
+        y4 = points[i - 1][1]
+        u_down = ((y4 - y3) * (x2 - x1)) - ((x4 - x3) * (y2 - y1))
         if u_down == 0:
             continue
-        u_up_a = ((x4 - x3)*(y1 - y3) - ((y4 - y3)*(x1 - x3)))
-        u_up_b = ((x2 - x1)*(y1 - y3) - ((y2 - y1)*(x1 - x3)))
+        u_up_a = ((x4 - x3) * (y1 - y3) - ((y4 - y3) * (x1 - x3)))
+        u_up_b = ((x2 - x1) * (y1 - y3) - ((y2 - y1) * (x1 - x3)))
         ua = u_up_a / u_down
         ub = u_up_b / u_down
         if 0 <= ua <= 1 and 0 <= ub <= 1:
@@ -33,14 +35,13 @@ def is_inside(x, y, points):
 
 def stain_points(radius, x, y):
     points = []
+    new_ang = 0
     angle = 360
     while angle > 0:
-        if angle < 180:
-            new_ang = random.randint(1, angle)
-        else:
-            new_ang = random.randint(1, int(angle/3))
-        angle -= new_ang
-        rad = random.randint(int(radius/2), int(radius*1.5))
+        d = random.randint(1, min(60, angle))
+        angle -= d
+        new_ang += d
+        rad = random.randint(int(radius / 2), int(radius * 1.5))
         new_x = math.cos(math.radians(new_ang)) * rad
         new_y = math.sin(math.radians(new_ang)) * rad
         points.append((new_x + x, new_y + y))
@@ -49,7 +50,7 @@ def stain_points(radius, x, y):
 
 def stain(chunks, biome, x, y, radius):
     ar = 0
-    points = stain_points(radius*Config.CHUNK_SIZE, x, y)
+    points = stain_points(radius * Config.CHUNK_SIZE, x, y)
     min_x = min(points, key=lambda i: i[0])[0] // Config.CHUNK_SIZE
     max_x = max(points, key=lambda i: i[0])[0] // Config.CHUNK_SIZE
     min_y = min(points, key=lambda i: i[1])[1] // Config.CHUNK_SIZE
@@ -58,16 +59,25 @@ def stain(chunks, biome, x, y, radius):
     min_y = int(max(min_y, 0))
     min_x = int(max(min_x, 0))
     max_y = int(min(max_y, len(chunks)))
+    # debug_screen = pygame.display.set_mode((len(chunks) * Config.CHUNK_SIZE, len(chunks) * Config.CHUNK_SIZE))
     for c_y in range(min_y, max_y):
         for c_x in range(min_x, max_x):
-            if is_inside(chunks[c_y][c_x].x*Config.CHUNK_SIZE, chunks[c_y][c_x].y*Config.CHUNK_SIZE, points):
+            if is_inside(chunks[c_y][c_x].x * Config.CHUNK_SIZE, chunks[c_y][c_x].y * Config.CHUNK_SIZE, points):
                 chunks[c_y][c_x].biome = biome
-                print(chunks[c_y][c_x].biome)
                 ar += 1
+    #             pygame.draw.rect(debug_screen,
+    #                              (255, 0, 0),
+    #                              pygame.Rect((c_x * Config.CHUNK_SIZE,
+    #                                           c_y * Config.CHUNK_SIZE),
+    #                                          (Config.CHUNK_SIZE,
+    #                                           Config.CHUNK_SIZE)))
+    # pygame.draw.polygon(debug_screen, (255, 255, 255), points, 1)
+    # pygame.display.update()
+    # input()
     return ar
 
 
-def expansion(chunks, biome, x, y, num, world):
+def expansion(chunks, biome, x, y, num):
     if num < 1:
         return
     num -= 1
@@ -76,15 +86,15 @@ def expansion(chunks, biome, x, y, num, world):
     new_y = y
     if (x + move) != x:
         new_x = x + move
-        if new_x < 0 or new_x >= world.size:
+        if new_x < 0 or new_x >= len(chunks):
             new_x = x
     else:
         move = random.choice((-1, 1))
         new_y = y + move
-        if new_y < 0 or new_y >= world.size:
+        if new_y < 0 or new_y >= len(chunks):
             new_y = y
-    filter(lambda c: c.x == new_x and c.y == new_y, chunks).__next__().biome = biome.value
-    expansion(chunks, biome, new_x, new_y, num, world)
+    chunks[new_y][new_x].biome = biome.value
+    expansion(chunks, biome, new_x, new_y, num)
 
 
 def get_biome_size(biome_type, static_biome_num):
@@ -113,20 +123,20 @@ def procedure_generation(world: model.World):
             filter(lambda c: c.x == x and c.y == y, chunks).__next__().biome = model.Biome.WATER.value
             water_num -= water_size
             water_size -= 1
-            expansion(chunks=chunks, biome=model.Biome.WATER, x=x, y=y, num=water_size, world=world)
+            expansion(chunks=game_world.chunks, biome=model.Biome.WATER, x=x, y=y, num=water_size)
+            game_world.save(session)
         while desert_num > 1:
-            desert_num -= stain(chunks=game_world.chunks, biome="desert", x=random.randint(0, world.size),
-                                y=random.randint(0, world.size),
-                                radius=math.sqrt(get_biome_size("desert", static_desert_num)/math.pi))
+            desert_num -= stain(chunks=game_world.chunks, biome="desert",
+                                x=random.randint(0, world.size * Config.CHUNK_SIZE),
+                                y=random.randint(0, world.size * Config.CHUNK_SIZE),
+                                radius=math.sqrt(get_biome_size("desert", static_desert_num) / math.pi))
             game_world.save(session)
         while mountains_num > 1:
-            mountains_size = get_biome_size("mountains", static_mountains_num)
-            x = random.randint(1, world.size - 2)
-            y = random.randint(1, world.size - 2)
-            filter(lambda c: c.x == x and c.y == y, chunks).__next__().biome = model.Biome.MOUNTAINS.value
-            mountains_num -= mountains_size
-            mountains_size -= 1
-            expansion(chunks=chunks, biome=model.Biome.MOUNTAINS, x=x, y=y, num=mountains_size, world=world)
+            mountains_num -= stain(chunks=game_world.chunks, biome="mountains",
+                                   x=random.randint(0, world.size * Config.CHUNK_SIZE),
+                                   y=random.randint(0, world.size * Config.CHUNK_SIZE),
+                                   radius=math.sqrt(get_biome_size("mountains", static_mountains_num) / math.pi))
+            game_world.save(session)
         session.commit()
     with new_session() as session:
         chunks = session.query(model.Chunk).filter(model.Chunk.world_id == world.id).all()
