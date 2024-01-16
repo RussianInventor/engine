@@ -1,7 +1,7 @@
 import json
 from common import model
 from sqlalchemy import and_, insert
-from . import game_objects
+from . import blueprint_game_objects, game_objects
 from common.config import Config
 
 
@@ -24,6 +24,7 @@ class Chunk(Storable):
     def __init__(self, id, x, y, biome):
         self.creatures = []
         self.items = []
+        self.buildings = []
         self.id = id
         self.x = x
         self.y = y
@@ -34,10 +35,12 @@ class Chunk(Storable):
         return cls(id=chunk.id, x=chunk.x, y=chunk.y, biome=chunk.biome)
 
     def add_obj(self, obj):
-        if isinstance(obj, game_objects.Item):
+        if isinstance(obj, blueprint_game_objects.Item):
             self.items.append(obj)
-        else:
+        elif isinstance(obj, blueprint_game_objects.Creature):
             self.creatures.append(obj)
+        else:
+            self.buildings.append(obj)
 
 
 class World(Storable):

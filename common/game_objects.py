@@ -1,22 +1,9 @@
-from abc import ABC
-import json
-from common.config import Config
+from . import blueprint_game_objects
 
 
-class ObjectBlueprint(ABC):
-    @classmethod
-    def from_json(cls, data):
-        cls(**json.loads(data))
+class Tree(blueprint_game_objects.Building):
+    def __init__(self, x, y, img_name, hp, max_hp=None):
+        if max_hp is None:
+            max_hp = hp
+        super().__init__(x=x, y=y, img_name=img_name, hp=hp, max_hp=max_hp)
 
-    def chunk_indexes(self):
-        x = self.x//Config.CHUNK_SIZE
-        y = self.y//Config.CHUNK_SIZE
-        return x, y
-
-
-class Item(ObjectBlueprint):
-    pass
-
-
-class Creature(ObjectBlueprint):
-    pass
