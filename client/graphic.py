@@ -1,3 +1,5 @@
+import time
+
 import pygame
 from os import path
 from common.config import Config
@@ -20,9 +22,9 @@ class Camera:
         self.x = x
         self.y = y
         self.offset_x, self.offset_y = pygame.display.get_window_size()
+
         self.offset_x = self.offset_x / 2 - self.vis_size / 2
         self.offset_y = self.offset_y / 2 - self.vis_size / 2
-        self.vis_size = self.scaled(self.vis_size)
 
         self.screen_x = screen_x if screen_x is not None else x
         self.screen_y = screen_y if screen_y is not None else y
@@ -44,8 +46,8 @@ class Camera:
         return -self.y
 
     def pos_shift(self, x, y):
-        x = x + self.shift_x
-        y = y + self.shift_y
+        x = self.offset_x + self.scaled(x - self.x)
+        y = self.offset_y + self.scaled(y - self.y)
         return x, y
 
     @property
@@ -105,8 +107,10 @@ class DrawWorld:
                     if event.key == pygame.K_LEFT:
                         self.camera.left()
 
-            #for row in self.app.game.world.chunks:
-                #for chunk in row:
+            # for row in self.app.game.world.chunks:
+            #     for chunk in row:
+            #         self.draw_chunk(chunk)
+
             for chunk in self.visible_chunks(self.app.game.world.chunks):
                 self.draw_chunk(chunk)
             # self.draw_objects(self.app.game.world.objects)
@@ -132,10 +136,10 @@ class DrawWorld:
 
     def draw_chunk(self, chunk):
         size = self.camera.scaled(Config.CHUNK_SIZE)
-        x, y = self.camera.pos_shift(chunk.x, chunk.y)
+        x, y = self.camera.pos_shift(chunk.x*Config.CHUNK_SIZE, chunk.y*Config.CHUNK_SIZE)
         pygame.draw.rect(self.screen,
                          chunk_color[chunk.biome],
-                         pygame.Rect(x * size, y * size, size + 1, size + 1),
+                         pygame.Rect(x, y, size + 1, size + 1),
                          width=0)
 
     def get_img(self, obj):
