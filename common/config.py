@@ -13,3 +13,4 @@ class Config:
                   "small": 35,
                   "medium": 50,
                   "big": 80}
+    object_gen = {"tr"}

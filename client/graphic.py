@@ -14,13 +14,15 @@ chunk_color = {"field": (0, 200, 0),
 
 
 class Camera:
-    _step = 10
+    _step = 1
     vis_size = 500
 
     def __init__(self, x, y, screen_x=None, screen_y=None):
         self.scale = Config.scale
         self.x = x
         self.y = y
+        self.v_x = 0
+        self.v_y = 0
         self.offset_x, self.offset_y = pygame.display.get_window_size()
 
         self.offset_x = self.offset_x / 2 - self.vis_size / 2
@@ -65,16 +67,20 @@ class Camera:
         return self._step / self.scale
 
     def down(self):
-        self.y -= self.step
+        self.v_y = -self.step
 
     def up(self):
-        self.y += self.step
+        self.v_y = self.step
 
     def right(self):
-        self.x -= self.step
+        self.v_x = -self.step
 
     def left(self):
-        self.x += self.step
+        self.v_x = self.step
+
+    def move(self):
+        self.x += self.v_x
+        self.y += self.v_y
 
 
 class DrawWorld:
@@ -98,14 +104,25 @@ class DrawWorld:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         pygame.display.quit()
-                    if event.key == pygame.K_DOWN:
+                    if event.key == pygame.K_s:
                         self.camera.down()
-                    if event.key == pygame.K_UP:
+                    if event.key == pygame.K_w:
                         self.camera.up()
-                    if event.key == pygame.K_RIGHT:
+                    if event.key == pygame.K_d:
                         self.camera.right()
-                    if event.key == pygame.K_LEFT:
+                    if event.key == pygame.K_a:
                         self.camera.left()
+                if event.type == pygame.KEYUP:
+                    if event.key == pygame.K_s:
+                        self.camera.v_y = 0
+                    if event.key == pygame.K_w:
+                        self.camera.v_y = 0
+                    if event.key == pygame.K_d:
+                        self.camera.v_x = 0
+                    if event.key == pygame.K_a:
+                        self.camera.v_x = 0
+            self.camera.move()
+
 
             # for row in self.app.game.world.chunks:
             #     for chunk in row:
@@ -128,8 +145,8 @@ class DrawWorld:
         num = (self.camera.real_size // Config.CHUNK_SIZE) + 1
         min_x = int(max(0, x))
         min_y = int(max(0, y))
-        max_x = int(min(len(chunks[0]), x + num))
-        max_y = int(min(len(chunks), y + num))
+        max_x = int(max(0, min(len(chunks[0]), x + num)))
+        max_y = int(max(0, min(len(chunks), y + num)))
         for row in chunks[min_y: max_y]:
             for chunk in row[min_x: max_x]:
                 yield chunk

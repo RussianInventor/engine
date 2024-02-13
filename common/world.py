@@ -30,6 +30,10 @@ class Chunk(Storable):
         self.y = y
         self.biome = biome
 
+    @property
+    def objs(self):
+        return self.creatures + self.items + self.buildings
+
     @classmethod
     def load(cls, chunk):
         return cls(id=chunk.id, x=chunk.x, y=chunk.y, biome=chunk.biome)
@@ -70,9 +74,12 @@ class World(Storable):
         return new_world
 
     def save(self, session):
+        session.query(model.Object).filter(model.Object.world_id == self.id).delete()
         chunks = session.query(model.Chunk).filter(model.Chunk.world_id == self.id).all()
         for chunk in chunks:
             game_chunk = self.chunks[chunk.y][chunk.x]
+            for obj in game_chunk.objs:
+                session.add(model.Object(id=obj.id, world_id=self.id, data=obj.to_json(), cls=obj.__class__.__name__))
             chunk.biome = game_chunk.biome
         # TODO такую же штуку для objects
 

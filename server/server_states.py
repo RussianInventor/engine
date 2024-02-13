@@ -47,7 +47,6 @@ class IdleState(State):
             new_world.name = msg.content["name"]
             new_world.size = msg.content["size"]
             new_chunks = []
-            # НЕ УДАЛЯТЬ ЭТО КРАШ ТЕСТ КОМПА
             with new_session(expire_on_commit=False) as session:
                 session.add(new_world)
                 session.flush()
@@ -67,6 +66,7 @@ class IdleState(State):
         if msg.title == messages.MessageType.DELETE_WORLD:
             with new_session() as session:
                 try:
+                    session.query(model.Object).filter(model.Object.world_id == msg.content["id"]).delete()
                     session.query(model.Chunk).filter(model.Chunk.world_id == msg.content["id"]).delete()
                     session.delete(session.query(model.World).filter(model.World.id == msg.content["id"]).first())
                     session.commit()

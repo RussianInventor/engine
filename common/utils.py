@@ -6,6 +6,8 @@ import random
 from server.data_base import new_session
 import math
 from .world import World
+from . import game_objects
+import json
 
 
 def is_inside(x, y, points):
@@ -104,6 +106,10 @@ def get_biome_size(biome_type, static_biome_num):
     return size
 
 
+def obj_gen(session):
+    return session.query(model.ObjectGen).all()
+
+
 def procedure_generation(world: model.World):
     with new_session() as session:
         chunks = session.query(model.Chunk).filter(model.Chunk.world_id == world.id).order_by(model.Chunk.y,
@@ -148,6 +154,7 @@ def procedure_generation(world: model.World):
                     for n_y in range(-1, 2):
                         if y + n_y != world.size and y + n_y != 0:
                             for chun in filter(lambda c: all((c.biome == model.Biome.FIELD.value,
+                                                              c.biome == model.Biome.DESERT.value,
                                                               c.x == n_x + x,
                                                               c.y == n_y + y)),
                                                chunks):
@@ -158,4 +165,15 @@ def procedure_generation(world: model.World):
                                          c.y == world.size - 1]),
                           chunks):
             chu.biome = model.Biome.MEGA_MOUNTAINS.value
+        session.commit()
+    with new_session() as session:
+        for gen in obj_gen(session):
+            for row in game_world.chunks:
+                for chunk in filter(lambda c: c.biome == gen.biome, row):
+                    if random.randint(0, 100) <= gen.percent_chunks:
+                        for i in range(random.randint(gen.min_num_in_chunk, gen.max_num_in_chunk)):
+                            kwargs = json.loads(gen.init_data)
+                            obj = vars(game_objects)[gen.cls].generation(chunk, kwargs)
+                            chunk.add_obj(obj)
+        game_world.save(session)
         session.commit()

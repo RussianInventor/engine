@@ -65,8 +65,25 @@ class Object(Base, Item):
     world_id = Column(TEXT, ForeignKey(World.id))
     data = Column(JSON)
     cls = Column(TEXT)
+    biome = Column(TEXT, ForeignKey(ChunkType.type))
+    num_in_chunk = Column(INTEGER)
 
     def __init__(self, id, world_id, data, cls):
+        super().__init__()
+        for key, val in locals().items():
+            self.__setattr__(key, val)
+
+
+class ObjectGen(Base, Item):
+    __tablename__ = "object_gens"
+    cls = Column(TEXT, primary_key=True)
+    biome = Column(TEXT, ForeignKey(ChunkType.type))
+    min_num_in_chunk = Column(INTEGER)
+    max_num_in_chunk = Column(INTEGER)
+    percent_chunks = Column(INTEGER)
+    init_data = Column(TEXT)
+
+    def __init__(self, cls, biome):
         super().__init__()
         for key, val in locals().items():
             self.__setattr__(key, val)
