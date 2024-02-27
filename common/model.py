@@ -65,8 +65,6 @@ class Object(Base, Item):
     world_id = Column(TEXT, ForeignKey(World.id))
     data = Column(JSON)
     cls = Column(TEXT)
-    biome = Column(TEXT, ForeignKey(ChunkType.type))
-    num_in_chunk = Column(INTEGER)
 
     def __init__(self, id, world_id, data, cls):
         super().__init__()

@@ -81,7 +81,6 @@ class World(Storable):
             for obj in game_chunk.objs:
                 session.add(model.Object(id=obj.id, world_id=self.id, data=obj.to_json(), cls=obj.__class__.__name__))
             chunk.biome = game_chunk.biome
-        # TODO такую же штуку для objects
 
     @classmethod
     def from_db(cls, session, world_id):

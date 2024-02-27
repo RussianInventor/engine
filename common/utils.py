@@ -1,5 +1,3 @@
-import pygame.display
-
 from . import model
 from .config import Config
 import random
@@ -67,15 +65,6 @@ def stain(chunks, biome, x, y, radius):
             if is_inside(chunks[c_y][c_x].x * Config.CHUNK_SIZE, chunks[c_y][c_x].y * Config.CHUNK_SIZE, points):
                 chunks[c_y][c_x].biome = biome
                 ar += 1
-    #             pygame.draw.rect(debug_screen,
-    #                              (255, 0, 0),
-    #                              pygame.Rect((c_x * Config.CHUNK_SIZE,
-    #                                           c_y * Config.CHUNK_SIZE),
-    #                                          (Config.CHUNK_SIZE,
-    #                                           Config.CHUNK_SIZE)))
-    # pygame.draw.polygon(debug_screen, (255, 255, 255), points, 1)
-    # pygame.display.update()
-    # input()
     return ar
 
 
@@ -145,26 +134,25 @@ def procedure_generation(world: model.World):
             game_world.save(session)
         session.commit()
     with new_session() as session:
-        chunks = session.query(model.Chunk).filter(model.Chunk.world_id == world.id).all()
-        for chu in filter(lambda c: c.biome == model.Biome.WATER.value, chunks):
-            x = chu.x
-            y = chu.y
-            for n_x in range(-1, 2):
-                if x + n_x != world.size and x + n_x != 0:
-                    for n_y in range(-1, 2):
-                        if y + n_y != world.size and y + n_y != 0:
-                            for chun in filter(lambda c: all((c.biome == model.Biome.FIELD.value,
-                                                              c.biome == model.Biome.DESERT.value,
-                                                              c.x == n_x + x,
-                                                              c.y == n_y + y)),
-                                               chunks):
-                                chun.biome = model.Biome.BEACH.value
-        for chu in filter(lambda c: any([c.x == 0,
-                                         c.x == world.size - 1,
-                                         c.y == 0,
-                                         c.y == world.size - 1]),
-                          chunks):
-            chu.biome = model.Biome.MEGA_MOUNTAINS.value
+        for row in game_world.chunks:
+            for chu in filter(lambda cu: cu.biome == model.Biome.WATER.value, row):
+                x = chu.x
+                y = chu.y
+                for n_x in range(-1, 2):
+                    if x + n_x != world.size and x + n_x != 0:
+                        for n_y in range(-1, 2):
+                            if y + n_y != world.size and y + n_y != 0:
+                                chuk = game_world.chunks[y + n_y][x + n_x]
+                                if chuk.biome == model.Biome.FIELD.value or chuk.biome == model.Biome.DESERT.value:
+                                    chuk.biome = model.Biome.BEACH.value
+        for row in game_world.chunks:
+            for chu in filter(lambda c: any([c.x == 0,
+                                             c.x == world.size - 1,
+                                             c.y == 0,
+                                             c.y == world.size - 1]),
+                              row):
+                chu.biome = model.Biome.MEGA_MOUNTAINS.value
+        game_world.save(session)
         session.commit()
     with new_session() as session:
         for gen in obj_gen(session):

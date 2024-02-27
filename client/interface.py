@@ -62,15 +62,7 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             QtWidgets.QMessageBox(self, text="Выберите мир").show()
             return
         self.app.game = Game(self.app, players=[], world_id=world_id)
-        # self.app.state.execute("run_game", kwargs={'world_id': world_id})
         self.app.set_state(GamingState)
-
-        # with new_session() as session:
-        #     chunks = session.query(model.Chunk).filter(model.Chunk.world_id == data).all()
-        # draw_chunks(self.scene, chunks, ComConfig.scale)
-        #self.show_frame("game_frame")
-        # self.graphic_thread = GraphicThread(self.app)
-        # self.graphic_thread.start()
         self.graphic_thread = self.app.state.execute("run_thread")
         self.graphic_thread.start()
 
