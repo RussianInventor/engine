@@ -2,6 +2,8 @@ import time
 
 import pygame
 from os import path
+
+import common.world
 from common.config import Config
 
 chunk_color = {"field": (0, 200, 0),
@@ -122,15 +124,8 @@ class DrawWorld:
                     if event.key == pygame.K_a:
                         self.camera.v_x = 0
             self.camera.move()
-
-
-            # for row in self.app.game.world.chunks:
-            #     for chunk in row:
-            #         self.draw_chunk(chunk)
-
             for chunk in self.visible_chunks(self.app.game.world.chunks):
                 self.draw_chunk(chunk)
-            # self.draw_objects(self.app.game.world.objects)
             pygame.draw.rect(self.screen,
                              (255, 0, 0),
                              pygame.Rect(*self.camera.pos_shift(self.camera.x, self.camera.y),
@@ -151,13 +146,14 @@ class DrawWorld:
             for chunk in row[min_x: max_x]:
                 yield chunk
 
-    def draw_chunk(self, chunk):
+    def draw_chunk(self, chunk: common.world.Chunk):
         size = self.camera.scaled(Config.CHUNK_SIZE)
         x, y = self.camera.pos_shift(chunk.x*Config.CHUNK_SIZE, chunk.y*Config.CHUNK_SIZE)
         pygame.draw.rect(self.screen,
                          chunk_color[chunk.biome],
                          pygame.Rect(x, y, size + 1, size + 1),
                          width=0)
+        self.draw_objects(chunk.objs)
 
     def get_img(self, obj):
         img_path = path.join(self.SOURCE, "img", obj.__class__.__name__.lower(), obj.img_name)
