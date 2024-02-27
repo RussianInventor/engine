@@ -164,4 +164,6 @@ class DrawWorld:
             x = obj.x
             y = obj.y
             img = self.get_img(obj)
+            w, h = img.get_size()
+            img = pygame.transform.scale(img, (self.camera.scaled(w), self.camera.scaled(h)))
             self.screen.blit(img, self.camera.pos_shift(x, y))

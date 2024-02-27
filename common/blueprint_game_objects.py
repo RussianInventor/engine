@@ -16,6 +16,10 @@ class ObjectBlueprint(ABC):
         for k, v in kwargs.items():
             self.__setattr__(k, v)
 
+    @property
+    def img_name(self):
+        return f'{self.__class__.__name__}.png'
+
     @classmethod
     def from_json(cls, data):
         return cls(**json.loads(data))

@@ -70,7 +70,7 @@ class World(Storable):
             cur_cls = clses[obj.cls]
             g_obj = cur_cls.from_json(obj.data)
             x, y = g_obj.chunk_indexes()
-            new_world.chunks[y][x].add_obj(obj)
+            new_world.chunks[y][x].add_obj(g_obj)
         return new_world
 
     def save(self, session):
