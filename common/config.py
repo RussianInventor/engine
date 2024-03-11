@@ -1,5 +1,5 @@
 class Config:
-    scale = 1
+    scale = 10
     min_scale = 0.1
     max_scale = 200
     CHUNK_SIZE = 25
@@ -13,4 +13,3 @@ class Config:
                   "small": 35,
                   "medium": 50,
                   "big": 80}
-    object_gen = {"tr"}

@@ -1,3 +1,4 @@
+import os.path
 import time
 
 import pygame
@@ -7,19 +8,19 @@ import common.world
 from common.config import Config
 
 chunk_color = {"field": (0, 200, 0),
-               "mountains": (50, 0, 0),
+               "mountains": path.join("img", "mountain", "Mountain.png"),
                "beach": (250, 250, 0),
                "water": (50, 50, 200),
                "desert": (200, 0, 0),
-               "MEGA_MOUNTAINS": (0, 0, 0)
+               "MEGA_MOUNTAINS": path.join("img", "mountain", "Vulcano.png")
                }
 
 
 class Camera:
     _step = 1
-    vis_size = 500
 
     def __init__(self, x, y, screen_x=None, screen_y=None):
+        self.vis_size_w, self.vis_size_h = pygame.display.get_window_size()
         self.scale = Config.scale
         self.x = x
         self.y = y
@@ -27,8 +28,8 @@ class Camera:
         self.v_y = 0
         self.offset_x, self.offset_y = pygame.display.get_window_size()
 
-        self.offset_x = self.offset_x / 2 - self.vis_size / 2
-        self.offset_y = self.offset_y / 2 - self.vis_size / 2
+        self.offset_x = self.offset_x / 2 - self.vis_size_w / 2
+        self.offset_y = self.offset_y / 2 - self.vis_size_h / 2
 
         self.screen_x = screen_x if screen_x is not None else x
         self.screen_y = screen_y if screen_y is not None else y
@@ -56,7 +57,7 @@ class Camera:
 
     @property
     def real_size(self):
-        return self.unscaled(self.vis_size)
+        return self.unscaled(self.vis_size_w), self.unscaled(self.vis_size_h)
 
     def scaled(self, n):
         return self.scale * n
@@ -99,7 +100,7 @@ class DrawWorld:
             self.camera = Camera(x=len(self.app.game.world.chunks) / 2,
                                  y=len(self.app.game.world.chunks) / 2)
         while True:
-            self.screen.fill((255, 255, 255))
+            self.screen.fill((0, 0, 0))
             for event in pygame.event.get():
                 if event.type == pygame.MOUSEWHEEL:
                     self.camera.set_scale(event.y * 0.1)
@@ -129,30 +130,38 @@ class DrawWorld:
             pygame.draw.rect(self.screen,
                              (255, 0, 0),
                              pygame.Rect(*self.camera.pos_shift(self.camera.x, self.camera.y),
-                                         self.camera.vis_size,
-                                         self.camera.vis_size),
+                                         self.camera.vis_size_w,
+                                         self.camera.vis_size_h),
                              width=1)
             pygame.display.update()
 
     def visible_chunks(self, chunks):
         x = self.camera.x // Config.CHUNK_SIZE
         y = self.camera.y // Config.CHUNK_SIZE
-        num = (self.camera.real_size // Config.CHUNK_SIZE) + 1
+        num_x = (self.camera.real_size[0] // Config.CHUNK_SIZE) + 1
+        num_y = (self.camera.real_size[1] // Config.CHUNK_SIZE) + 1
         min_x = int(max(0, x))
         min_y = int(max(0, y))
-        max_x = int(max(0, min(len(chunks[0]), x + num)))
-        max_y = int(max(0, min(len(chunks), y + num)))
+        max_x = int(max(0, min(len(chunks[0]), x + num_x)))
+        max_y = int(max(0, min(len(chunks), y + num_y)))
         for row in chunks[min_y: max_y]:
             for chunk in row[min_x: max_x]:
                 yield chunk
 
     def draw_chunk(self, chunk: common.world.Chunk):
-        size = self.camera.scaled(Config.CHUNK_SIZE)
-        x, y = self.camera.pos_shift(chunk.x*Config.CHUNK_SIZE, chunk.y*Config.CHUNK_SIZE)
-        pygame.draw.rect(self.screen,
-                         chunk_color[chunk.biome],
-                         pygame.Rect(x, y, size + 1, size + 1),
-                         width=0)
+        if isinstance(chunk_color[chunk.biome], tuple):
+            size = self.camera.scaled(Config.CHUNK_SIZE)
+            x, y = self.camera.pos_shift(chunk.x * Config.CHUNK_SIZE, chunk.y * Config.CHUNK_SIZE)
+            pygame.draw.rect(self.screen,
+                             chunk_color[chunk.biome],
+                             pygame.Rect(x, y, size + 1, size + 1),
+                             width=0)
+        else:
+            x, y = chunk.x * Config.CHUNK_SIZE, chunk.y * Config.CHUNK_SIZE
+            img = pygame.image.load(path.join(self.SOURCE, chunk_color[chunk.biome]))
+            w, h = img.get_size()
+            img = pygame.transform.scale(img, (self.camera.scaled(w), self.camera.scaled(h)))
+            self.screen.blit(img, self.camera.pos_shift(x, y))
         self.draw_objects(chunk.objs)
 
     def get_img(self, obj):
