@@ -1,6 +1,6 @@
 import os.path
+import sys
 import time
-
 import pygame
 from os import path
 
@@ -17,7 +17,7 @@ chunk_color = {"field": (0, 200, 0),
 
 
 class Camera:
-    _step = 1
+    _step = 10
 
     def __init__(self, x, y, screen_x=None, screen_y=None):
         self.vis_size_w, self.vis_size_h = pygame.display.get_window_size()
@@ -100,13 +100,18 @@ class DrawWorld:
             self.camera = Camera(x=len(self.app.game.world.chunks) / 2,
                                  y=len(self.app.game.world.chunks) / 2)
         while True:
-            self.screen.fill((0, 0, 0))
             for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.display.quit()
+                    pygame.quit()
+                    return
                 if event.type == pygame.MOUSEWHEEL:
                     self.camera.set_scale(event.y * 0.1)
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         pygame.display.quit()
+                        pygame.quit()
+                        return
                     if event.key == pygame.K_s:
                         self.camera.down()
                     if event.key == pygame.K_w:
@@ -124,6 +129,7 @@ class DrawWorld:
                         self.camera.v_x = 0
                     if event.key == pygame.K_a:
                         self.camera.v_x = 0
+            self.screen.fill((0, 0, 0))
             self.camera.move()
             for chunk in self.visible_chunks(self.app.game.world.chunks):
                 self.draw_chunk(chunk)
