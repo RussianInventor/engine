@@ -63,8 +63,7 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             return
         self.app.game = Game(self.app, players=[], world_id=world_id)
         self.app.set_state(GamingState)
-        self.graphic_thread = self.app.state.execute("run_thread")
-        self.graphic_thread.start()
+
 
     def delete_world(self):
         data = self.world_selection.currentData()

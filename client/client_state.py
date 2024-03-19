@@ -100,7 +100,13 @@ class GamingState(State):
         self.app.game.world = common.world.World.load(world_obj=World(**answer.content['world']),
                                                       chunks_objs=[Chunk(**c) for c in answer.content['chunks']],
                                                       object_objs=[Object(**o) for o in answer.content['objects']])
+        self.graphic_thread = threading.Thread(target=self.draw_world.update)
+        self.graphic_thread.start()
 
-    def run_thread(self):
-        thread = threading.Thread(target=self.draw_world.update)
-        return thread
+        self.wait_thread = threading.Thread(target=self.update)
+        self.wait_thread.start()
+
+    def update(self):
+        while self.graphic_thread.is_alive():
+            time.sleep(1)
+        self.app.set_state(IdleState)
