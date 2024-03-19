@@ -16,6 +16,27 @@ chunk_color = {"field": (0, 200, 0),
                }
 
 
+class Sprites:
+    def __init__(self):
+        self.images = {}
+
+    def add_img(self, img, key, scale):
+        if self.images.get(scale) is None:
+            self.images[scale] = {}
+        self.images[scale][key] = img
+
+    def exists(self, key, scale):
+        if self.images.get(scale) is None:
+            return False
+        return self.images.get(scale).get(key) is not None
+
+    def get(self, scale, key):
+        try:
+            return self.images[scale][key]
+        except KeyError:
+            return None
+
+
 class Camera:
     camera_vis = False
     _step = 10
@@ -100,6 +121,7 @@ class DrawWorld:
 
     def __init__(self, app):
         self.camera = None
+        self.sprites = None
         self.app = app
         pygame.init()
         self.screen = pygame.display.set_mode((0, 0))
@@ -108,6 +130,8 @@ class DrawWorld:
         if self.camera is None:
             self.camera = Camera(x=len(self.app.game.world.chunks) / 2,
                                  y=len(self.app.game.world.chunks) / 2)
+            self.sprites = Sprites()
+
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -146,7 +170,9 @@ class DrawWorld:
                 self.camera.show_camera(self.screen)
             for chunk in self.visible_chunks(self.app.game.world.chunks):
                 for obj in chunk.objs:
-                    self.screen.blit(obj.img, self.camera.pos_shift(obj.x, obj.y))
+                    self.screen.blit(self.sprites.get(scale=self.camera.scale,
+                                                      key=obj.img_key),
+                                     self.camera.pos_shift(obj.x, obj.y))
             pygame.display.update()
 
     def visible_chunks(self, chunks):
@@ -178,13 +204,16 @@ class DrawWorld:
             self.screen.blit(img, self.camera.pos_shift(x, y))
         self.load_img_objects(chunk.objs)
 
-    def get_img(self, obj):
-        img_path = path.join(self.SOURCE, "img", obj.__class__.__name__.lower(), obj.img_name)
-        return pygame.image.load(img_path)
+    def get_img_path(self, obj):
+        return path.join(self.SOURCE, "img", obj.__class__.__name__.lower(), obj.img_name)
 
     def load_img_objects(self, objs):
         for obj in objs:
-            img = self.get_img(obj)
+            img_path = self.get_img_path(obj)
+            if self.sprites.exists(key=img_path, scale=self.camera.scale):
+                continue
+            img = pygame.image.load(img_path)
             w, h = img.get_size()
             img = pygame.transform.scale(img, (self.camera.scaled(w), self.camera.scaled(h)))
-            obj.add_img(new_img=img)
+            self.sprites.add_img(img=img, scale=self.camera.scale, key=img_path)
+            obj.add_img_key(img_path)

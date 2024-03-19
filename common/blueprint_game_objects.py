@@ -22,10 +22,10 @@ class ObjectBlueprint(ABC):
             self.__setattr__(k, v)
 
     @property
-    def img(self):
+    def img_key(self):
         return self.images.get(DEFAULT)
 
-    def add_img(self, new_img, key: str = DEFAULT):
+    def add_img_key(self, new_img, key: str = DEFAULT):
         if key not in self.images.keys():
             self.images[key] = new_img
 
