@@ -5,17 +5,29 @@ import json
 from common.config import Config
 
 
+DEFAULT = 'default'
+
+
 class ObjectBlueprint(ABC):
+    images = {}
+
     def __init__(self, x, y, id=None, **kwargs):
         if id is None:
             self.id = str(uuid.uuid4())
         else:
             self.id = id
-        self.img = None
         self.x = x
         self.y = y
         for k, v in kwargs.items():
             self.__setattr__(k, v)
+
+    @property
+    def img(self):
+        return self.images.get(DEFAULT)
+
+    def add_img(self, new_img, key: str = DEFAULT):
+        if key not in self.images.keys():
+            self.images[key] = new_img
 
     @property
     def img_name(self):

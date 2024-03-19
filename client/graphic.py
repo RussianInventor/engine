@@ -184,8 +184,7 @@ class DrawWorld:
 
     def load_img_objects(self, objs):
         for obj in objs:
-            x = obj.x
-            y = obj.y
             img = self.get_img(obj)
             w, h = img.get_size()
-            obj.img = pygame.transform.scale(img, (self.camera.scaled(w), self.camera.scaled(h)))
+            img = pygame.transform.scale(img, (self.camera.scaled(w), self.camera.scaled(h)))
+            obj.add_img(new_img=img)
