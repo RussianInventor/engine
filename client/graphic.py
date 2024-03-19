@@ -18,6 +18,7 @@ chunk_color = {"field": (0, 200, 0),
 
 class Camera:
     _step = 1
+    camera_vis = False
 
     def __init__(self, x, y, screen_x=None, screen_y=None):
         self.vis_size_w, self.vis_size_h = pygame.display.get_window_size()
@@ -33,6 +34,14 @@ class Camera:
 
         self.screen_x = screen_x if screen_x is not None else x
         self.screen_y = screen_y if screen_y is not None else y
+
+    def show_camera(self, screen):
+        pygame.draw.rect(screen,
+                         (255, 0, 0),
+                         pygame.Rect(*self.pos_shift(self.x, self.y),
+                                     self.vis_size_w,
+                                     self.vis_size_h),
+                         width=1)
 
     def set_scale(self, delta):
         delta = round(delta, 2)
@@ -127,19 +136,18 @@ class DrawWorld:
             self.camera.move()
             for chunk in self.visible_chunks(self.app.game.world.chunks):
                 self.draw_chunk(chunk)
-            pygame.draw.rect(self.screen,
-                             (255, 0, 0),
-                             pygame.Rect(*self.camera.pos_shift(self.camera.x, self.camera.y),
-                                         self.camera.vis_size_w,
-                                         self.camera.vis_size_h),
-                             width=1)
+            if self.camera.camera_vis:
+                self.camera.show_camera(self.screen)
+            for chunk in self.visible_chunks(self.app.game.world.chunks):
+                for obj in chunk.objs:
+                    self.screen.blit(obj.img, self.camera.pos_shift(obj.x, obj.y))
             pygame.display.update()
 
     def visible_chunks(self, chunks):
         x = self.camera.x // Config.CHUNK_SIZE
         y = self.camera.y // Config.CHUNK_SIZE
-        num_x = (self.camera.real_size[0] // Config.CHUNK_SIZE) + 1
-        num_y = (self.camera.real_size[1] // Config.CHUNK_SIZE) + 1
+        num_x = (self.camera.real_size[0] // Config.CHUNK_SIZE) + 2
+        num_y = (self.camera.real_size[1] // Config.CHUNK_SIZE) + 2
         min_x = int(max(0, x))
         min_y = int(max(0, y))
         max_x = int(max(0, min(len(chunks[0]), x + num_x)))
@@ -162,17 +170,16 @@ class DrawWorld:
             w, h = img.get_size()
             img = pygame.transform.scale(img, (self.camera.scaled(w), self.camera.scaled(h)))
             self.screen.blit(img, self.camera.pos_shift(x, y))
-        self.draw_objects(chunk.objs)
+        self.load_img_objects(chunk.objs)
 
     def get_img(self, obj):
         img_path = path.join(self.SOURCE, "img", obj.__class__.__name__.lower(), obj.img_name)
         return pygame.image.load(img_path)
 
-    def draw_objects(self, objs):
+    def load_img_objects(self, objs):
         for obj in objs:
             x = obj.x
             y = obj.y
             img = self.get_img(obj)
             w, h = img.get_size()
-            img = pygame.transform.scale(img, (self.camera.scaled(w), self.camera.scaled(h)))
-            self.screen.blit(img, self.camera.pos_shift(x, y))
+            obj.img = pygame.transform.scale(img, (self.camera.scaled(w), self.camera.scaled(h)))
