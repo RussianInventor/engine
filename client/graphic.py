@@ -1,8 +1,6 @@
-import os.path
-import sys
-import time
 import pygame
 from os import path
+from PIL import Image
 
 import common.world
 from common.config import Config
@@ -20,6 +18,15 @@ class Sprites:
     def __init__(self):
         self.images = {}
 
+    def load_heap_of_pixels(self, img_path, key):
+        img = Image.open(img_path)
+        pixels = img.load()
+        self.images[key] = []
+        for y in range(img.size[1]):
+            self.images[key].append([])
+            for x in range(img.size[0]):
+                self.images[key][-1] = pixels[x, y]
+
     def add_img(self, img, key, scale):
         if self.images.get(scale) is None:
             self.images[scale] = {}
@@ -30,9 +37,9 @@ class Sprites:
             return False
         return self.images.get(scale).get(key) is not None
 
-    def get(self, scale, key):
+    def get(self, key):
         try:
-            return self.images[scale][key]
+            return self.images[key]
         except KeyError:
             return None
 
@@ -169,10 +176,22 @@ class DrawWorld:
             if self.camera.camera_vis:
                 self.camera.show_camera(self.screen)
             for chunk in self.visible_chunks(self.app.game.world.chunks):
-                for obj in chunk.objs:
-                    self.screen.blit(self.sprites.get(scale=self.camera.scale,
-                                                      key=obj.img_key),
-                                     self.camera.pos_shift(obj.x, obj.y))
+                for obj in sorted(chunk.objs, key=lambda a: a.y, reverse=False):
+                    img = self.sprites.get(key=obj.img_key)
+                    img_cord = self.camera.pos_shift(obj.x, obj.y)
+                    for y in range(len(img)):
+                        for x in range(len(img[y])):
+                            pygame.draw.rect(self.screen,
+                                             img[y][x],
+                                             pygame.Rect(img_cord[0] - (x * self.camera.scale),
+                                                         img_cord[1] - (y * self.camera.scale),
+                                                         self.camera.scale,
+                                                         self.camera.scale),
+                                             width=0)
+                    # self.screen.blit(img,
+                    #                 (img_cord[0]-size[0]*obj.shift_img_x,
+                    #                  img_cord[1]-size[1]*obj.shift_img_y))
+
             pygame.display.update()
 
     def visible_chunks(self, chunks):

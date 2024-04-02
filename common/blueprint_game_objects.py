@@ -18,6 +18,8 @@ class ObjectBlueprint(ABC):
             self.id = id
         self.x = x
         self.y = y
+        self.shift_img_x = 0.5
+        self.shift_img_y = 1
         for k, v in kwargs.items():
             self.__setattr__(k, v)
 
