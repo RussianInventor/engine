@@ -1,6 +1,8 @@
+import os.path
+import sys
+import time
 import pygame
 from os import path
-from PIL import Image
 
 import common.world
 from common.config import Config
@@ -18,28 +20,21 @@ class Sprites:
     def __init__(self):
         self.images = {}
 
-    def load_heap_of_pixels(self, img_path, key):
-        img = Image.open(img_path)
-        pixels = img.load()
-        self.images[key] = []
-        for y in range(img.size[1]):
-            self.images[key].append([])
-            for x in range(img.size[0]):
-                self.images[key][-1] = pixels[x, y]
-
     def add_img(self, img, key, scale):
         if self.images.get(scale) is None:
             self.images[scale] = {}
         self.images[scale][key] = img
 
-    def exists(self, key, scale):
+    def exists(self, scale, key=None):
         if self.images.get(scale) is None:
             return False
+        if key is None:
+            return len(self.images.get(scale)) > 0
         return self.images.get(scale).get(key) is not None
 
-    def get(self, key):
+    def get(self, scale, key):
         try:
-            return self.images[key]
+            return self.images[scale][key]
         except KeyError:
             return None
 
@@ -55,6 +50,7 @@ class Camera:
         self.y = y
         self.v_x = 0
         self.v_y = 0
+        self.fps = None
         self.offset_x, self.offset_y = pygame.display.get_window_size()
 
         self.offset_x = self.offset_x / 2 - self.vis_size_w / 2
@@ -124,14 +120,20 @@ class Camera:
 
 
 class DrawWorld:
-    SOURCE = path.join("common", "source")
+    SOURCE = Config.SOURCE
 
     def __init__(self, app):
         self.camera = None
         self.sprites = None
         self.app = app
         pygame.init()
+        pygame.font.init()
+        self.font = pygame.font.SysFont("Consoles", 50)
         self.screen = pygame.display.set_mode((0, 0))
+
+    def show_debug(self, screen):
+        txt = self.font.render(f" fps: {self.camera.fps}", 0, [255, 255, 255])
+        screen.blit(txt, (5, 5))
 
     def update(self):
         if self.camera is None:
@@ -140,6 +142,7 @@ class DrawWorld:
             self.sprites = Sprites()
 
         while True:
+            frame_start = time.time()
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.display.quit()
@@ -169,6 +172,11 @@ class DrawWorld:
                         self.camera.v_x = 0
                     if event.key == pygame.K_a:
                         self.camera.v_x = 0
+            if not self.sprites.exists(scale=self.camera.scale):
+                for row in self.app.game.world.chunks:
+                    for chunk in row:
+                        self.load_img_objects(chunk.objs)
+                        self.load_img_chunk(chunk)
             self.screen.fill((0, 0, 0))
             self.camera.move()
             for chunk in self.visible_chunks(self.app.game.world.chunks):
@@ -176,23 +184,17 @@ class DrawWorld:
             if self.camera.camera_vis:
                 self.camera.show_camera(self.screen)
             for chunk in self.visible_chunks(self.app.game.world.chunks):
-                for obj in sorted(chunk.objs, key=lambda a: a.y, reverse=False):
-                    img = self.sprites.get(key=obj.img_key)
-                    img_cord = self.camera.pos_shift(obj.x, obj.y)
-                    for y in range(len(img)):
-                        for x in range(len(img[y])):
-                            pygame.draw.rect(self.screen,
-                                             img[y][x],
-                                             pygame.Rect(img_cord[0] - (x * self.camera.scale),
-                                                         img_cord[1] - (y * self.camera.scale),
-                                                         self.camera.scale,
-                                                         self.camera.scale),
-                                             width=0)
-                    # self.screen.blit(img,
-                    #                 (img_cord[0]-size[0]*obj.shift_img_x,
-                    #                  img_cord[1]-size[1]*obj.shift_img_y))
-
+                for obj in sorted(chunk.objs, key=lambda ob: ob.y):
+                    img = self.sprites.get(scale=self.camera.scale,
+                                           key=obj.img_key)
+                    pos = self.camera.pos_shift(obj.x, obj.y)
+                    self.screen.blit(img,
+                                     (pos[0] - obj.shift_img_x * img.get_size()[0],
+                                      pos[1] - obj.shift_img_y * img.get_size()[1]))
+            self.show_debug(self.screen)
             pygame.display.update()
+            frame_end = time.time()
+            self.camera.fps = int(1 / (frame_end - frame_start))
 
     def visible_chunks(self, chunks):
         x = self.camera.x // Config.CHUNK_SIZE
@@ -217,11 +219,8 @@ class DrawWorld:
                              width=0)
         else:
             x, y = chunk.x * Config.CHUNK_SIZE, chunk.y * Config.CHUNK_SIZE
-            img = pygame.image.load(path.join(self.SOURCE, chunk_color[chunk.biome]))
-            w, h = img.get_size()
-            img = pygame.transform.scale(img, (self.camera.scaled(w), self.camera.scaled(h)))
+            img = self.sprites.get(scale=self.camera.scale, key=chunk.img_key)
             self.screen.blit(img, self.camera.pos_shift(x, y))
-        self.load_img_objects(chunk.objs)
 
     def get_img_path(self, obj):
         return path.join(self.SOURCE, "img", obj.__class__.__name__.lower(), obj.img_name)
@@ -236,3 +235,13 @@ class DrawWorld:
             img = pygame.transform.scale(img, (self.camera.scaled(w), self.camera.scaled(h)))
             self.sprites.add_img(img=img, scale=self.camera.scale, key=img_path)
             obj.add_img_key(img_path)
+
+    def load_img_chunk(self, chunk):
+        if isinstance(chunk_color[chunk.biome], tuple):
+            return
+        img_path = path.join(self.SOURCE, chunk_color[chunk.biome])
+        img = pygame.image.load(img_path)
+        w, h = img.get_size()
+        img = pygame.transform.scale(img, (self.camera.scaled(w), self.camera.scaled(h)))
+        self.sprites.add_img(img=img, scale=self.camera.scale, key=img_path)
+        chunk.add_img_key(img_path)

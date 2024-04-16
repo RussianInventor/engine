@@ -1,4 +1,8 @@
+from os import path
+
+
 class Config:
+    SOURCE = path.join("common", "source")
     scale = 10
     min_scale = 0.1
     max_scale = 200

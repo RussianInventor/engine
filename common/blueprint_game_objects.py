@@ -1,4 +1,5 @@
 import random
+import select
 import uuid
 from abc import ABC
 import json
@@ -18,6 +19,7 @@ class ObjectBlueprint(ABC):
             self.id = id
         self.x = x
         self.y = y
+        self._img_name = None
         self.shift_img_x = 0.5
         self.shift_img_y = 1
         for k, v in kwargs.items():
@@ -33,7 +35,13 @@ class ObjectBlueprint(ABC):
 
     @property
     def img_name(self):
-        return f'{self.__class__.__name__}.png'
+        if self._img_name is None:
+            return f'{self.__class__.__name__}.png'
+        return self._img_name
+
+    @img_name.setter
+    def img_name(self, img):
+        self._img_name = img
 
     @classmethod
     def from_json(cls, data):
