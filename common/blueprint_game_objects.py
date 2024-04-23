@@ -1,3 +1,4 @@
+import math
 import random
 import select
 import uuid
@@ -65,10 +66,11 @@ class Item(ObjectBlueprint):
 
 
 class Creature(ObjectBlueprint):
-    def __init__(self, x, y, hp, dx, dy, max_hp):
+    def __init__(self, x, y, hp, max_hp, v):
         super().__init__(x=x, y=y)
-        self.dx = dx
-        self.dy = dy
+        self.v = v
+        self.vx = 0
+        self.vy = 0
         self._hp = hp
         self._max_hp = max_hp
 
@@ -79,6 +81,17 @@ class Creature(ObjectBlueprint):
     @hp.setter
     def hp(self, val):
         self._hp = min(val, self._max_hp)
+
+    def move(self, x, y):
+        dx = x - self.x
+        dy = y - self.y
+        d = math.sqrt(dx**2 + dy**2)
+        cos = dx/d
+        sin = dy/d
+        vx = cos*self.v
+        vy = sin*self.v
+        self.x += vx
+        self.y += vy
 
 
 class Building(ObjectBlueprint):
