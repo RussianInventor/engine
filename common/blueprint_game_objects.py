@@ -10,13 +10,9 @@ DEFAULT = 'default'
 
 
 class ObjectBlueprint(ABC):
-    images = {}
-
     def __init__(self, x, y, id=None, **kwargs):
-        if id is None:
-            self.id = str(uuid.uuid4())
-        else:
-            self.id = id
+        self.images = {}
+        self.id = str(uuid.uuid4()) if id is None else id
         self.x = x
         self.y = y
         self._img_name = None

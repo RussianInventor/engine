@@ -228,13 +228,13 @@ class DrawWorld:
     def load_img_objects(self, objs):
         for obj in objs:
             img_path = self.get_img_path(obj)
+            obj.add_img_key(img_path)
             if self.sprites.exists(key=img_path, scale=self.camera.scale):
                 continue
             img = pygame.image.load(img_path)
             w, h = img.get_size()
             img = pygame.transform.scale(img, (self.camera.scaled(w), self.camera.scaled(h)))
             self.sprites.add_img(img=img, scale=self.camera.scale, key=img_path)
-            obj.add_img_key(img_path)
 
     def load_img_chunk(self, chunk):
         if isinstance(chunk_color[chunk.biome], tuple):
