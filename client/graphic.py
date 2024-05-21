@@ -11,7 +11,7 @@ chunk_color = {"field": (0, 200, 0),
                "mountains": path.join("img", "mountain", "Mountain.png"),
                "beach": (250, 250, 0),
                "water": (50, 50, 200),
-               "desert": (200, 0, 0),
+               "desert": path.join("img", "desert", "desert1.png"),
                "MEGA_MOUNTAINS": path.join("img", "mountain", "Vulcano.png")
                }
 

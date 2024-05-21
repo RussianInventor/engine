@@ -13,7 +13,7 @@ class Config:
     biome_percents = {"water": (15, 20),
                       "mountains": (10, 20),
                       "desert": (25, 40)}
-    world_size = {"test": 7,
+    world_size = {"test": 10,
                   "small": 35,
                   "medium": 50,
                   "big": 80}

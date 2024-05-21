@@ -12,6 +12,7 @@ class ServerApp:
 
         self.server_thread = threading.Thread(target=self.exchanger.listen)
         self.client_thread = threading.Thread(target=self.exchanger.listen_clients)
+        self.game_thread = None
 
     def set_state(self, state_cls: State.__class__):
         self.state = state_cls(self)

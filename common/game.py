@@ -106,9 +106,10 @@ class Game:
                     break
                 _, event = self.events.get()
                 print(event.time, event.author, event.other)
-            for chunk in self.world.chunks:
-                for creature in chunk.creatures:
-                    print(creature.x, creature.y)
+            for row in self.world.chunks:
+                for chunk in row:
+                    for creature in chunk.creatures:
+                        print(creature.x, creature.y)
             duration = time.time() - start_time
             # if duration < Config.tick_duration:
             #     time.sleep(Config.tick_duration - duration)

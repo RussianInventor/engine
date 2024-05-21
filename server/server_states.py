@@ -1,4 +1,5 @@
 import logging
+import threading
 import traceback
 from abc import ABC, abstractmethod
 from common.exchange import messages
@@ -27,7 +28,10 @@ class IdleState(State):
             self.app.game = game.Game(self.app, [msg.author], msg.content["world_id"])
             self.app.game.world = world
             msg.answer({'status': 'OK'})
+            self.app.game_thread = threading.Thread(target=self.app.game.update)
+            self.app.game_thread.start()
             self.app.set_state(GamingState)
+
         if msg.title == messages.MessageType.GET_WORLD:
             with new_session() as session:
                 q = session.query(model.World)
@@ -91,3 +95,6 @@ class GamingState(State):
                 q = q.filter(model.Object.world_id == msg.content["world_id"])
                 content["objects"] = [i.get_dict() for i in q.all()]
                 msg.answer(content=content)
+
+    def update(self):
+        self.app.game.update()

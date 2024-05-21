@@ -66,8 +66,8 @@ class Item(ObjectBlueprint):
 
 
 class Creature(ObjectBlueprint):
-    def __init__(self, x, y, hp, max_hp, v):
-        super().__init__(x=x, y=y)
+    def __init__(self, x, y, hp, max_hp, v, **kwargs):
+        super().__init__(x=x, y=y, **kwargs)
         self.v = v
         self.vx = 0
         self.vy = 0

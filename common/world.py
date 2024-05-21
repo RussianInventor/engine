@@ -17,13 +17,15 @@ class Storable:
         obj = vars(model)[self.__class__.__name__]()
 
 
+DEFAULT = 'default'
+
+
 class Chunk(Storable):
-    DEFAULT = 'default'
-    images = {}
     w = Config.CHUNK_SIZE
     h = Config.CHUNK_SIZE
 
     def __init__(self, id, x, y, biome):
+        self.images = {}
         self.creatures = []
         self.items = []
         self.buildings = []
@@ -34,7 +36,7 @@ class Chunk(Storable):
 
     @property
     def img_key(self):
-        return self.images.get(self.DEFAULT)
+        return self.images.get(DEFAULT)
 
     def add_img_key(self, new_img, key: str = DEFAULT):
         if key not in self.images.keys():
