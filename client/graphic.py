@@ -67,13 +67,8 @@ class Camera:
                                      self.vis_size_h),
                          width=1)
 
-    def set_scale(self, delta):
-        delta = round(delta, 2)
-        self.scale += delta
-        if self.scale > Config.max_scale:
-            self.scale = Config.max_scale
-        if self.scale < Config.min_scale:
-            self.scale = Config.min_scale
+    def set_scale(self, scale):
+        self.scale = scale
 
     @property
     def shift_x(self):
@@ -103,16 +98,16 @@ class Camera:
         return self._step / self.scale
 
     def down(self):
-        self.v_y = -self.step
-
-    def up(self):
         self.v_y = self.step
 
+    def up(self):
+        self.v_y = -self.step
+
     def right(self):
-        self.v_x = -self.step
+        self.v_x = self.step
 
     def left(self):
-        self.v_x = self.step
+        self.v_x = -self.step
 
     def move(self):
         self.x += self.v_x
@@ -140,7 +135,12 @@ class DrawWorld:
             self.camera = Camera(x=len(self.app.game.world.chunks) / 2,
                                  y=len(self.app.game.world.chunks) / 2)
             self.sprites = Sprites()
-
+        for scale in Config.scales:
+            self.camera.scale = scale
+            for row in self.app.game.world.chunks:
+                for chunk in row:
+                    self.load_img_objects(chunk.objs)
+                    self.load_img_chunk(chunk)
         while True:
             frame_start = time.time()
             for event in pygame.event.get():
@@ -149,7 +149,13 @@ class DrawWorld:
                     pygame.quit()
                     return
                 if event.type == pygame.MOUSEWHEEL:
-                    self.camera.set_scale(event.y * 0.1)
+                    if event.y > 0:
+                        Config.scale_index += 1
+                        Config.scale_index = min(Config.scale_index, len(Config.scales) - 1)
+                    if event.y < 0:
+                        Config.scale_index -= 1
+                        Config.scale_index = max(Config.scale_index, 0)
+                    self.camera.set_scale(Config.scale)
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         pygame.display.quit()
@@ -232,7 +238,7 @@ class DrawWorld:
             if self.sprites.exists(key=img_path, scale=self.camera.scale):
                 continue
             img = pygame.image.load(img_path)
-            w, h = img.get_size()
+            w, h = obj.w, obj.h
             img = pygame.transform.scale(img, (self.camera.scaled(w), self.camera.scaled(h)))
             self.sprites.add_img(img=img, scale=self.camera.scale, key=img_path)
 
@@ -241,7 +247,7 @@ class DrawWorld:
             return
         img_path = path.join(self.SOURCE, chunk_color[chunk.biome])
         img = pygame.image.load(img_path)
-        w, h = img.get_size()
-        img = pygame.transform.scale(img, (self.camera.scaled(w), self.camera.scaled(h)))
+        w, h = Config.CHUNK_SIZE, Config.CHUNK_SIZE
+        img = pygame.transform.scale(img, (self.camera.scaled(w)+1, self.camera.scaled(h)+1))
         self.sprites.add_img(img=img, scale=self.camera.scale, key=img_path)
         chunk.add_img_key(img_path)

@@ -20,10 +20,7 @@ from . import design
 
 class Scene(QGraphicsScene):
     def wheelEvent(self, event):
-        if event.delta() > 0:
-            ComConfig.scale += 0.1
-        if event.delta() < 0:
-            ComConfig.scale -= 0.1
+        pass
 
 
 class GraphicThread(QThread):
@@ -31,10 +28,10 @@ class GraphicThread(QThread):
         super().__init__()
         self.app = app
 
-    def run(self):
-        graphic.draw_chunks(scene=self.app.interface.scene,
-                            chunks=self.app.game.world.chunks,
-                            scale=ComConfig.scale)
+    # def run(self):
+    #     graphic.draw_chunks(scene=self.app.interface.scene,
+    #                         chunks=self.app.game.world.chunks,
+    #                         scale=ComConfig.scale)
 
 
 class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):

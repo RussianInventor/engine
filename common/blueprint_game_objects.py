@@ -14,6 +14,8 @@ class ObjectBlueprint(ABC):
     def __init__(self, x, y, id=None, **kwargs):
         self.images = {}
         self.id = str(uuid.uuid4()) if id is None else id
+        self.w = 10
+        self.h = 10
         self.x = x
         self.y = y
         self._img_name = None

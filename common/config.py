@@ -3,10 +3,12 @@ from os import path
 
 class Config:
     SOURCE = path.join("common", "source")
-    scale = 10
-    min_scale = 0.1
-    max_scale = 200
-    CHUNK_SIZE = 25
+    scale_step = 0.1
+    min_scale = 0.5
+    max_scale = 10
+    scales = [i/10 for i in range(int(min_scale*10), max_scale*10, int(scale_step*10))]
+    scale_index = len(scales)-1
+    CHUNK_SIZE = 175
     world_percents = {"water": 50,
                       "mountains": 5,
                       "desert": 20}
@@ -17,3 +19,9 @@ class Config:
                   "small": 35,
                   "medium": 50,
                   "big": 80}
+
+    @classmethod
+    @property
+    def scale(cls):
+        return cls.scales[cls.scale_index]
+

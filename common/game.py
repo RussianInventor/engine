@@ -109,7 +109,7 @@ class Game:
             for row in self.world.chunks:
                 for chunk in row:
                     for creature in chunk.creatures:
-                        print(creature.x, creature.y)
+                        pass
             duration = time.time() - start_time
             # if duration < Config.tick_duration:
             #     time.sleep(Config.tick_duration - duration)
