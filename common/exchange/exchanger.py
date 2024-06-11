@@ -142,6 +142,8 @@ class Server(App):
             print('fail')
             pass
 
+    def send_update(self):
+
 
 class Client(App):
     def __init__(self, app, id, port):

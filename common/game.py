@@ -3,8 +3,7 @@ import time
 from common import game_utils
 from common import world
 from client import config
-# from server.config import Config
-# from server.data_base import new_session
+from common import a_non_i
 
 
 class Player:
@@ -48,36 +47,6 @@ class I(Object, Moving):
         super(Moving).__init__(v=1)
 
 
-# class Pygame:
-#     def __init__.py(self, game):
-#         self.screen = None
-#         self.game = game
-#
-#     def start(self):
-#         pygame.init()
-#         self.screen = pygame.display.set_mode((500, 500))
-#         while True:
-#             self.update()
-#
-#     def check_key(self, key_code):
-#         command = self.game.keyboard.get_key(key_code)
-#         if command is not None:
-#             command()
-#
-#     def update(self):
-#         start_time = time.time()
-#         for event in pygame.event.get():
-#             if event.type == pygame.KEYDOWN:
-#                 self.check_key(event.key)
-#             if event.type == pygame.QUIT:
-#                 exit()
-#         pygame.display.update()
-#
-#         duration = time.time() - start_time
-#         if duration < config.Config.frame_duration:
-#             time.sleep(config.Config.frame_duration - duration)
-
-
 class Game:
     EVENTS_UPDATE_LIMIT = 100
 
@@ -90,13 +59,11 @@ class Game:
         self.messages = queue.PriorityQueue()
         self.keyboard = config.Keyboard()
 
-    # @staticmethod
-    # def load_world(world_id):
-    #     with new_session() as session:
-    #         return world.World.from_db(session, world_id)
-
-    def update_pygame(self):
-        pass
+    def load_a_non_i(self):
+        for row in self.world.chunks:
+            for chunk in row:
+                for creature in chunk.creatures:
+                    creature.brain = a_non_i.Context(obj=creature,state=a_non_i.CalmState, world=self.world)
 
     def update(self):
         start_time = time.time()
@@ -109,7 +76,8 @@ class Game:
             for row in self.world.chunks:
                 for chunk in row:
                     for creature in chunk.creatures:
-                        pass
+                        creature.brain.update()
+            self.app.connections.send()
             duration = time.time() - start_time
             # if duration < Config.tick_duration:
             #     time.sleep(Config.tick_duration - duration)

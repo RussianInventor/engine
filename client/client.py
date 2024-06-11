@@ -22,5 +22,5 @@ class ClientApp:
         self.interface.start()
         sys.exit(self.qt_app.exec_())
 
-    def set_state(self, state_cls):
-        self.state = state_cls(self)
+    def set_state(self, state_cls, **kwargs):
+        self.state = state_cls(self, **kwargs)

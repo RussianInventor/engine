@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
 import random
 from .config import Config
+import blueprint_game_objects
 
 
 class Context:
-    def __init__(self, obj, state, world):
+    def __init__(self, obj: blueprint_game_objects.Creature, state, world):
         self.world = world
         self.obj = obj
         self.state = state
@@ -12,9 +13,12 @@ class Context:
     def switch_to(self, new_state):
         self.state = new_state(self)
 
+    def update(self):
+        self.state.update()
+
 
 class State(ABC):
-    def __init__(self, context):
+    def __init__(self, context: Context):
         self.context = context
 
     @abstractmethod
@@ -32,4 +36,7 @@ class CalmState(State):
                        random.randint(0, len(self.context.world.chunks)*Config.CHUNK_SIZE))
 
     def update(self):
-        pass
+        if self.target is None:
+            self.select_target()
+        if self.context.obj.move(*self.target):
+            self.select_target()

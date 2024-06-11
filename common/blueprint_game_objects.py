@@ -75,6 +75,7 @@ class Creature(ObjectBlueprint):
         self.vy = 0
         self._hp = hp
         self._max_hp = max_hp
+        self.brain = None
 
     @property
     def hp(self):
@@ -84,16 +85,24 @@ class Creature(ObjectBlueprint):
     def hp(self, val):
         self._hp = min(val, self._max_hp)
 
-    def move(self, x, y):
+    def speed(self, x, y):
         dx = x - self.x
         dy = y - self.y
         d = math.sqrt(dx**2 + dy**2)
         cos = dx/d
         sin = dy/d
-        vx = cos*self.v
-        vy = sin*self.v
-        self.x += vx
-        self.y += vy
+        self.vx = cos*self.v
+        self.vy = sin*self.v
+
+    def move(self, x, y):
+        if x - self.x > self.vx and y - self.y > self.vy:
+            self.x += self.vx
+            self.y += self.vy
+            return False
+        else:
+            self.x = x
+            self.y = y
+            return True
 
 
 class Building(ObjectBlueprint):

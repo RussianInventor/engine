@@ -14,8 +14,8 @@ class ServerApp:
         self.client_thread = threading.Thread(target=self.exchanger.listen_clients)
         self.game_thread = None
 
-    def set_state(self, state_cls: State.__class__):
-        self.state = state_cls(self)
+    def set_state(self, state_cls: State.__class__, **kwargs):
+        self.state = state_cls(self, **kwargs)
 
     def run(self):
         self.server_thread.start()
