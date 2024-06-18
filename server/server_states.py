@@ -24,7 +24,7 @@ class IdleState(State):
         logging.info(f'handle message: {msg.title}: {msg.content}')
         if msg.title == messages.MessageType.RUN_GAME:
             msg.answer({'status': 'OK'})
-            self.app.set_state(GamingState, world_id=msg.content["world_id"])
+            self.app.set_state(GamingState, world_id=msg.content["world_id"], starter_id=msg.author)
 
         if msg.title == messages.MessageType.GET_WORLD:
             with new_session() as session:
@@ -74,11 +74,11 @@ class IdleState(State):
 
 
 class GamingState(State):
-    def __init__(self, app, world_id):
+    def __init__(self, app, world_id, starter_id):
         super().__init__(app=app)
         with new_session() as session:
             world = world_base.World.from_db(session, world_id)
-        self.app.game = game.Game(self.app, [], world_id)
+        self.app.game = game.Game(self.app, [starter_id], world_id)
         self.app.game.world = world
         self.app.game.load_a_non_i()
         self.app.game_thread = threading.Thread(target=self.app.game.update)
@@ -99,4 +99,3 @@ class GamingState(State):
                 q = q.filter(model.Object.world_id == msg.content["world_id"])
                 content["objects"] = [i.get_dict() for i in q.all()]
                 msg.answer(content=content)
-

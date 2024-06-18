@@ -4,6 +4,7 @@ from common import game_utils
 from common import world
 from client import config
 from common import a_non_i
+from .exchange import exchanger
 
 
 class Player:
@@ -63,7 +64,7 @@ class Game:
         for row in self.world.chunks:
             for chunk in row:
                 for creature in chunk.creatures:
-                    creature.brain = a_non_i.Context(obj=creature,state=a_non_i.CalmState, world=self.world)
+                    creature.brain = a_non_i.Context(obj=creature, state=a_non_i.CalmState, world=self.world)
 
     def update(self):
         start_time = time.time()
@@ -77,7 +78,7 @@ class Game:
                 for chunk in row:
                     for creature in chunk.creatures:
                         creature.brain.update()
-            self.app.connections.send()
+            self.app.exchanger.send_update()
             duration = time.time() - start_time
             # if duration < Config.tick_duration:
             #     time.sleep(Config.tick_duration - duration)

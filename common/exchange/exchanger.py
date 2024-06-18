@@ -77,8 +77,11 @@ class App(ABC):
     def get_sending_socket(self, receiver):
         pass
 
-    def send_message(self, message: Message):
-        connection: socket.socket = self.get_sending_socket(message.receiver)
+    def send_message(self, message: Message, connection=None):
+        if connection is None:
+            connection: socket.socket = self.get_sending_socket(message.receiver)
+        else:
+            pass
         logging.info(f'send: {message.json()}')
         connection.send(message.json().encode('utf- 8'))
         answer = read(connection)
@@ -143,6 +146,14 @@ class Server(App):
             pass
 
     def send_update(self):
+        content = {"chunks": [], "objects": []}
+        new_message = Message(connection=self.get_sending_socket(self.app.game.players[0]),
+                              title=MessageType.WORLD_UPDATE,
+                              time=0,
+                              content=content,
+                              author="server",
+                              receiver=self.app.game.players[0])
+        self.send_message(new_message, self.receivers[self.app.game.players[0]])
 
 
 class Client(App):

@@ -1,14 +1,15 @@
 from abc import ABC, abstractmethod
 import random
 from .config import Config
-import blueprint_game_objects
+from common import blueprint_game_objects
 
 
 class Context:
     def __init__(self, obj: blueprint_game_objects.Creature, state, world):
         self.world = world
         self.obj = obj
-        self.state = state
+        self.state = None
+        self.switch_to(state)
 
     def switch_to(self, new_state):
         self.state = new_state(self)
