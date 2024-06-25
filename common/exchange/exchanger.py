@@ -149,7 +149,7 @@ class Server(App):
         content = {"chunks": [], "objects": []}
         new_message = Message(connection=self.get_sending_socket(self.app.game.players[0]),
                               title=MessageType.WORLD_UPDATE,
-                              time=0,
+                              time=time.time(),
                               content=content,
                               author="server",
                               receiver=self.app.game.players[0])

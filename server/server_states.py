@@ -23,7 +23,19 @@ class IdleState(State):
     def handle_messages(self, msg: messages.Message):
         logging.info(f'handle message: {msg.title}: {msg.content}')
         if msg.title == messages.MessageType.RUN_GAME:
-            msg.answer({'status': 'OK'})
+            with new_session() as session:
+                q = session.query(model.World)
+                q = q.filter(model.World.id == msg.content["world_id"])
+                world = q.first()
+                content = {"world": world.get_dict(), "chunks": [], "objects": []}
+                q = session.query(model.Chunk)
+                q = q.filter(model.Chunk.world_id == msg.content["world_id"])
+                q = q.order_by(model.Chunk.y, model.Chunk.x)
+                content["chunks"] = [i.get_dict() for i in q.all()]
+                q = session.query(model.Object)
+                q = q.filter(model.Object.world_id == msg.content["world_id"])
+                content["objects"] = [i.get_dict() for i in q.all()]
+                msg.answer(content=content)
             self.app.set_state(GamingState, world_id=msg.content["world_id"], starter_id=msg.author)
 
         if msg.title == messages.MessageType.GET_WORLD:
@@ -85,17 +97,4 @@ class GamingState(State):
         self.app.game_thread.start()
 
     def handle_messages(self, msg: messages.Message):
-        if msg.title == messages.MessageType.GET_WORLD_FULL_INFO:
-            with new_session() as session:
-                q = session.query(model.World)
-                q = q.filter(model.World.id == msg.content["world_id"])
-                world = q.first()
-                content = {"world": world.get_dict(), "chunks": [], "objects": []}
-                q = session.query(model.Chunk)
-                q = q.filter(model.Chunk.world_id == msg.content["world_id"])
-                q = q.order_by(model.Chunk.y, model.Chunk.x)
-                content["chunks"] = [i.get_dict() for i in q.all()]
-                q = session.query(model.Object)
-                q = q.filter(model.Object.world_id == msg.content["world_id"])
-                content["objects"] = [i.get_dict() for i in q.all()]
-                msg.answer(content=content)
+        pass

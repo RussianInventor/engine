@@ -87,13 +87,6 @@ class GamingState(State):
                                        author=self.app.user.user_id,
                                        receiver="server.py")
         answer = self.exchanger.send_message(new_message)
-        new_message = messages.Message(connection=self.exchanger.connection,
-                                       title=messages.MessageType.GET_WORLD_FULL_INFO,
-                                       time=time.time(),
-                                       content={"world_id": self.app.game.world_id},
-                                       author=self.app.user.user_id,
-                                       receiver="server.py")
-        answer = self.exchanger.send_message(new_message)
         World = namedtuple('World', answer.content['world'])
         Chunk = namedtuple('Chunk', answer.content['chunks'][0])
 
