@@ -2,7 +2,8 @@ import queue
 import time
 from common import game_utils
 from common import world
-from client import config
+from client import config as client_config
+from server import config as server_config
 from common import a_non_i
 from .exchange import exchanger
 
@@ -58,7 +59,7 @@ class Game:
         self.players = players
         self.events = queue.PriorityQueue()
         self.messages = queue.PriorityQueue()
-        self.keyboard = config.Keyboard()
+        self.keyboard = client_config.Keyboard()
 
     def load_a_non_i(self):
         for row in self.world.chunks:
@@ -78,7 +79,7 @@ class Game:
                 for chunk in row:
                     for creature in chunk.creatures:
                         creature.brain.update()
-            self.app.exchanger.send_update()
+            # self.app.exchanger.send_update()
             duration = time.time() - start_time
-            # if duration < Config.tick_duration:
-            #     time.sleep(Config.tick_duration - duration)
+            if duration < server_config.Config.tick_duration:
+                time.sleep(server_config.Config.tick_duration - duration)

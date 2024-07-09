@@ -77,16 +77,17 @@ class App(ABC):
     def get_sending_socket(self, receiver):
         pass
 
-    def send_message(self, message: Message, connection=None):
+    def send_message(self, message: Message, connection=None, answer_wait=True, log_level="info"):
         if connection is None:
             connection: socket.socket = self.get_sending_socket(message.receiver)
         else:
             pass
-        logging.info(f'send: {message.json()}')
+        # getattr(logging, log_level)(f'send: {message.json()}')
         connection.send(message.json().encode('utf- 8'))
-        answer = read(connection)
-        logging.info(f'answer: {answer.json()}')
-        return answer
+        if answer_wait:
+            answer = read(connection)
+#             getattr(logging, log_level)(f'answer: {answer.json()}')
+            return answer
 
     def read_message(self, connection_id) -> Message:
         connection = self.connections.get(connection_id)
@@ -153,7 +154,7 @@ class Server(App):
                               content=content,
                               author="server",
                               receiver=self.app.game.players[0])
-        self.send_message(new_message, self.receivers[self.app.game.players[0]])
+        self.send_message(new_message, self.receivers[self.app.game.players[0]], answer_wait=False, log_level="debug")
 
 
 class Client(App):
@@ -163,6 +164,12 @@ class Client(App):
         self.address_server = None
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.listening_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    def server_listen(self, connection):
+        while True:
+            msg = read(connection)
+            logging.info(f'get msg from server: {msg.json()}')
+            self.app.state.handle_message(msg=msg)
 
     def get_sending_socket(self, receiver=None):
         return self.connection
@@ -176,6 +183,7 @@ class Client(App):
             try:
                 conn, address = self.listening_socket.accept()
                 logging.info(f'input connection from {address}')
+                self.server_listen(conn)
                 break
                 # m = Message(self.listening_socket, 'test', time.time(), {'test': 'test'}, self.user.user_id, 'server.py')
                 # self.send_message(m)

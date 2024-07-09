@@ -14,6 +14,9 @@ class State(ABC):
     def __init__(self, app):
         self.app = app
 
+    def handle_message(self, msg):
+        pass
+
     @property
     def exchanger(self):
         return self.app.exchanger
@@ -103,3 +106,6 @@ class GamingState(State):
         while self.graphic_thread.is_alive():
             time.sleep(1)
         self.app.set_state(IdleState)
+
+    def handle_message(self, msg):
+        pass
