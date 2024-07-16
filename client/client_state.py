@@ -98,6 +98,13 @@ class GamingState(State):
                                                       object_objs=[Object(**o) for o in answer.content['objects']])
         self.graphic_thread = threading.Thread(target=self.draw_world.update)
         self.graphic_thread.start()
+        new_message = messages.Message(connection=self.exchanger.connection,
+                                       title=messages.MessageType.CLIENT_READY,
+                                       time=time.time(),
+                                       content={},
+                                       author=self.app.user.user_id,
+                                       receiver="server.py")
+        self.exchanger.send_message(new_message, answer_wait=False)
 
         self.wait_thread = threading.Thread(target=self.update)
         self.wait_thread.start()

@@ -97,4 +97,6 @@ class GamingState(State):
         self.app.game_thread.start()
 
     def handle_messages(self, msg: messages.Message):
-        pass
+        if msg.title == messages.MessageType.CLIENT_READY:
+            self.app.clients[msg.author] = 1
+

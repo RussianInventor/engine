@@ -142,19 +142,22 @@ class Server(App):
             logging.debug(f'try to connect to {address[0]}:{msg.content.get("port")}')
             msg.answer({'result': 'success'})
             self.receivers[client_id].connect((address[0], msg.content.get("port")))
+            self.app.clients[client_id] = 0
         else:
             print('fail')
             pass
 
     def send_update(self):
         content = {"chunks": [], "objects": []}
-        new_message = Message(connection=self.get_sending_socket(self.app.game.players[0]),
-                              title=MessageType.WORLD_UPDATE,
-                              time=time.time(),
-                              content=content,
-                              author="server",
-                              receiver=self.app.game.players[0])
-        self.send_message(new_message, self.receivers[self.app.game.players[0]], answer_wait=False, log_level="debug")
+        for player_id, player_status in self.app.clients.items():
+            if player_status == 1:
+                new_message = Message(connection=self.get_sending_socket(self.app.game.players[0]),
+                                      title=MessageType.WORLD_UPDATE,
+                                      time=time.time(),
+                                      content=content,
+                                      author="server",
+                                      receiver=player_id)
+                self.send_message(new_message, self.receivers[player_id], answer_wait=False, log_level="debug")
 
 
 class Client(App):

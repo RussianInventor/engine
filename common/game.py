@@ -79,7 +79,7 @@ class Game:
                 for chunk in row:
                     for creature in chunk.creatures:
                         creature.brain.update()
-            # self.app.exchanger.send_update()
+            self.app.exchanger.send_update()
             duration = time.time() - start_time
             if duration < server_config.Config.tick_duration:
                 time.sleep(server_config.Config.tick_duration - duration)

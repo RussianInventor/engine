@@ -7,6 +7,7 @@ from .server_states import State
 class ServerApp:
     def __init__(self, client_id, port):
         self.exchanger = Server(app=self, id=client_id, port=port)
+        self.clients = {}
         self.game = None
         self.state = None
 

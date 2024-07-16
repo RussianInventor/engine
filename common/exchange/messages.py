@@ -11,6 +11,7 @@ class MessageType:
     WORLD_LIST = "world_list"
     DELETE_WORLD = "delete_world"
     WORLD_UPDATE = "world_update"
+    CLIENT_READY = "client_ready"
 
 
 class Message:
