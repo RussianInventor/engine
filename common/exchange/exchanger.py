@@ -147,8 +147,8 @@ class Server(App):
             print('fail')
             pass
 
-    def send_update(self):
-        content = {"chunks": [], "objects": []}
+    def send_update(self, chunks, objects):
+        content = {"chunks": chunks, "objects": [obj for obj in objects if obj is not None]}
         for player_id, player_status in self.app.clients.items():
             if player_status == 1:
                 new_message = Message(connection=self.get_sending_socket(self.app.game.players[0]),

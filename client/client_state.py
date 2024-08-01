@@ -115,4 +115,15 @@ class GamingState(State):
         self.app.set_state(IdleState)
 
     def handle_message(self, msg):
-        pass
+        if msg.title == messages.MessageType.WORLD_UPDATE:
+            for obj in msg.content["objects"]:
+                y = int(obj.pop("old_y") // common.config.Config.CHUNK_SIZE)
+                x = int(obj.pop("old_x") // common.config.Config.CHUNK_SIZE)
+                current_chunk = self.app.game.world.chunks[y][x]
+                id = obj.pop("id")
+                for creature in current_chunk.creatures:
+                    if creature.id == id:
+                        for atr, val in obj.items():
+                            creature.__setattr__(atr, val)
+                    self.app.game.world.switch_chunk(current_chunk, creature)
+                    break

@@ -75,11 +75,12 @@ class Game:
                     break
                 _, event = self.events.get()
                 print(event.time, event.author, event.other)
+            update_object_list = []
             for row in self.world.chunks:
                 for chunk in row:
                     for creature in chunk.creatures:
-                        creature.brain.update()
-            self.app.exchanger.send_update()
+                        update_object_list.append(creature.brain.update())
+            self.app.exchanger.send_update(chunks=[], objects=update_object_list)
             duration = time.time() - start_time
             if duration < server_config.Config.tick_duration:
                 time.sleep(server_config.Config.tick_duration - duration)

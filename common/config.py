@@ -3,7 +3,7 @@ from os import path
 
 class Config:
     SOURCE = path.join("common", "source")
-    scale_step = 0.1
+    scale_step = 0.5
     min_scale = 0.5
     max_scale = 10
     scales = [i/10 for i in range(int(min_scale*10), max_scale*10, int(scale_step*10))]

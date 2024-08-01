@@ -69,6 +69,12 @@ class World(Storable):
         self.day_time = None
         self.type = type
 
+    def switch_chunk(self, current_chunk: Chunk, obj):
+        x, y = obj.chunk_indexes()
+        if (x, y) != (current_chunk.x, current_chunk.y):
+            current_chunk.creatures.remove(obj)
+            self.chunks[y][x].creatures.append(obj)
+
     @classmethod
     def load(cls, world_obj, chunks_objs, object_objs):
         new_world = cls(world_obj.type, id=world_obj.id)

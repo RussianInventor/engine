@@ -15,7 +15,16 @@ class Context:
         self.state = new_state(self)
 
     def update(self):
+        before = self.obj.__dict__.copy()
         self.state.update()
+        after = self.obj.__dict__
+        update_list = {}
+        for atr, val in before.items():
+            if val != after[atr]:
+                update_list[atr] = after[atr]
+        if update_list:
+            update_list.update({"id": self.obj.id, "old_x": self.obj.x, "old_y": self.obj.y})
+            return update_list
 
 
 class State(ABC):
