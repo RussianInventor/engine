@@ -95,7 +95,7 @@ class Creature(ObjectBlueprint):
         self.vy = sin*self.v
 
     def move(self, x, y):
-        if x - self.x > self.vx and y - self.y > self.vy:
+        if abs(x - self.x) > abs(self.vx) and abs(y - self.y) > abs(self.vy):
             self.x += self.vx
             self.y += self.vy
             return False

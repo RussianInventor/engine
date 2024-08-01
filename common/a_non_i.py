@@ -44,9 +44,10 @@ class CalmState(State):
     def select_target(self):
         self.target = (random.randint(0, len(self.context.world.chunks)*Config.CHUNK_SIZE),
                        random.randint(0, len(self.context.world.chunks)*Config.CHUNK_SIZE))
+        self.context.obj.speed(*self.target)
 
     def update(self):
         if self.target is None:
             self.select_target()
         if self.context.obj.move(*self.target):
-            self.select_target()
+            self.target = None

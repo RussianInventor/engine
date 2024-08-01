@@ -68,8 +68,8 @@ class Game:
                     creature.brain = a_non_i.Context(obj=creature, state=a_non_i.CalmState, world=self.world)
 
     def update(self):
-        start_time = time.time()
         while True:
+            start_time = time.time()
             for _ in range(0, self.EVENTS_UPDATE_LIMIT):
                 if self.events.empty():
                     break
