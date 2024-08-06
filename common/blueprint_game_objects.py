@@ -102,6 +102,8 @@ class Creature(ObjectBlueprint):
         else:
             self.x = x
             self.y = y
+            self.vx = 0
+            self.vy = 0
             return True
 
 
