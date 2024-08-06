@@ -82,7 +82,6 @@ class IdleState(State):
 class GamingState(State):
     def __init__(self, app):
         super().__init__(app)
-        self.draw_world = graphic.DrawWorld(self.app)
         new_message = messages.Message(connection=self.exchanger.connection,
                                        title=messages.MessageType.RUN_GAME,
                                        time=time.time(),
@@ -96,6 +95,7 @@ class GamingState(State):
         self.app.game.world = common.world.World.load(world_obj=World(**answer.content['world']),
                                                       chunks_objs=[Chunk(**c) for c in answer.content['chunks']],
                                                       object_objs=[Object(**o) for o in answer.content['objects']])
+        self.draw_world = graphic.DrawWorld(self.app)
         self.graphic_thread = threading.Thread(target=self.draw_world.update)
         self.graphic_thread.start()
         new_message = messages.Message(connection=self.exchanger.connection,
