@@ -1,37 +1,15 @@
-import logging
 import subprocess
 from common.config import Config as ComConfig
 from client.config import Config
-from .client_state import IdleState, GamingState
-from PyQt5.QtWidgets import QGraphicsScene
-from PyQt5.Qt import QThread
-from common import model
-from common.game import Game
-from client import graphic
+from client.client_state import IdleState, GamingState
 
 subprocess.call(("pyuic5",
-                 "client/untitled.ui",
+                 "client/client.ui",
                  "-o",
                  "client/design.py"))
 import sys
 from PyQt5 import QtWidgets
-from . import design
-
-
-class Scene(QGraphicsScene):
-    def wheelEvent(self, event):
-        pass
-
-
-class GraphicThread(QThread):
-    def __init__(self, app):
-        super().__init__()
-        self.app = app
-
-    # def run(self):
-    #     graphic.draw_chunks(scene=self.app.interface.scene,
-    #                         chunks=self.app.game.world.chunks,
-    #                         scale=ComConfig.scale)
+from client.interface import design
 
 
 class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
@@ -46,8 +24,7 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.play_button.clicked.connect(self.start_game)
 
         self.graphic_thread = None
-        self.scene = Scene()
-        self.canvas.setScene(self.scene)
+        # self.canvas.setScene(self.scene)
 
     def start(self):
         self.show()
@@ -58,9 +35,7 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         if world_id is None:
             QtWidgets.QMessageBox(self, text="Выберите мир").show()
             return
-        self.app.game = Game(self.app, players=[], world_id=world_id)
-        self.app.set_state(GamingState)
-
+        self.app.set_state(GamingState, world_id=world_id)
 
     def delete_world(self):
         data = self.world_selection.currentData()

@@ -7,7 +7,10 @@ from common.model import Object
 import common.world
 from common.exchange import messages
 from client import graphic
+from client.game import Game
+
 from common.config import Config as ComConfig
+from queue import Queue
 
 
 class State(ABC):
@@ -80,21 +83,25 @@ class IdleState(State):
 
 
 class GamingState(State):
-    def __init__(self, app):
+    def __init__(self, app, world_id):
         super().__init__(app)
         new_message = messages.Message(connection=self.exchanger.connection,
                                        title=messages.MessageType.RUN_GAME,
                                        time=time.time(),
-                                       content={"world_id": self.app.game.world_id},
+                                       content={"world_id": world_id},
                                        author=self.app.user.user_id,
                                        receiver="server.py")
         answer = self.exchanger.send_message(new_message)
         World = namedtuple('World', answer.content['world'])
         Chunk = namedtuple('Chunk', answer.content['chunks'][0])
 
-        self.app.game.world = common.world.World.load(world_obj=World(**answer.content['world']),
-                                                      chunks_objs=[Chunk(**c) for c in answer.content['chunks']],
-                                                      object_objs=[Object(**o) for o in answer.content['objects']])
+        world = common.world.World.load(world_obj=World(**answer.content['world']),
+                                      chunks_objs=[Chunk(**c) for c in answer.content['chunks']],
+                                      object_objs=[Object(**o) for o in answer.content['objects']])
+        self.app.game = Game(app=self.app,
+                             players=[],
+                             world=world)
+
         self.draw_world = graphic.DrawWorld(self.app)
         self.graphic_thread = threading.Thread(target=self.draw_world.update)
         self.graphic_thread.start()
@@ -103,7 +110,7 @@ class GamingState(State):
                                        time=time.time(),
                                        content={},
                                        author=self.app.user.user_id,
-                                       receiver="server.py")
+                                       receiver="server")
         self.exchanger.send_message(new_message, answer_wait=False)
 
         self.wait_thread = threading.Thread(target=self.update)
@@ -116,14 +123,4 @@ class GamingState(State):
 
     def handle_message(self, msg):
         if msg.title == messages.MessageType.WORLD_UPDATE:
-            for obj in msg.content["objects"]:
-                y = int(obj.pop("old_y") // common.config.Config.CHUNK_SIZE)
-                x = int(obj.pop("old_x") // common.config.Config.CHUNK_SIZE)
-                current_chunk = self.app.game.world.chunks[y][x]
-                id = obj.pop("id")
-                for creature in current_chunk.creatures:
-                    if creature.id == id:
-                        for atr, val in obj.items():
-                            creature.__setattr__(atr, val)
-                    self.app.game.world.switch_chunk(current_chunk, creature)
-                    break
+            self.app.game.update_queue.put(msg)

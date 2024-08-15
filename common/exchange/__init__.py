@@ -1,2 +1,2 @@
-from .exchanger import App, Client, Server
+from .exchanger import Exchanger, Client, Server
 from common.exchange.messages import Message

@@ -62,14 +62,13 @@ class Connection:
         addr, conn = self.listening_socket.accept()
 
 
-class App(ABC):
+class Exchanger(ABC):
     def __init__(self, user_id, app):
         self.connections = {}
 
         self.input_messages = queue.PriorityQueue()
         self.output_messages = queue.PriorityQueue()
 
-        self.game = None
         self.user = User(user_id)
         self.app = app
 
@@ -77,11 +76,13 @@ class App(ABC):
     def get_sending_socket(self, receiver):
         pass
 
-    def send_message(self, message: Message, connection=None, answer_wait=True, log_level="info"):
+    def send_message(self,
+                     message: Message,
+                     connection=None,
+                     answer_wait=True,
+                     log_level="info"):
         if connection is None:
             connection: socket.socket = self.get_sending_socket(message.receiver)
-        else:
-            pass
         # getattr(logging, log_level)(f'send: {message.json()}')
         connection.send(message.json().encode('utf- 8'))
         if answer_wait:
@@ -94,7 +95,7 @@ class App(ABC):
         return connection.read()
 
 
-class Server(App):
+class Server(Exchanger):
     port_num = 4000
     backlog = 10
 
@@ -129,7 +130,7 @@ class Server(App):
             for client_id, conn in self.connections.items():
                 msg = read(conn)
                 logging.info(f'get msg from {client_id}: {msg.json()}')
-                self.app.state.handle_messages(msg=msg)
+                self.app.handle_message(msg=msg)
 
     def new_connection(self, sock, address):
         msg = read(sock)
@@ -147,8 +148,9 @@ class Server(App):
             print('fail')
             pass
 
-    def send_update(self, chunks, objects):
-        content = {"chunks": chunks, "objects": [obj for obj in objects if obj is not None]}
+    def broadcast(self, chunks, objects):
+        content = {"chunks": chunks,
+                   "objects": [obj for obj in objects if obj is not None]}
         for player_id, player_status in self.app.clients.items():
             if player_status == 1:
                 new_message = Message(connection=self.get_sending_socket(self.app.game.players[0]),
@@ -160,7 +162,7 @@ class Server(App):
                 self.send_message(new_message, self.receivers[player_id], answer_wait=False, log_level="debug")
 
 
-class Client(App):
+class Client(Exchanger):
     def __init__(self, app, id, port):
         super().__init__(user_id=id, app=app)
         self.listening_port = port

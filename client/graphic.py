@@ -139,7 +139,7 @@ class DrawWorld:
             self.camera.scale = scale
             for row in self.app.game.world.chunks:
                 for chunk in row:
-                    self.load_img_objects(chunk.objs)
+                    self.load_img_objects(chunk.objects.values())
                     self.load_img_chunk(chunk)
         while True:
             frame_start = time.time()
@@ -181,7 +181,7 @@ class DrawWorld:
             if not self.sprites.exists(scale=self.camera.scale):
                 for row in self.app.game.world.chunks:
                     for chunk in row:
-                        self.load_img_objects(chunk.objs)
+                        self.load_img_objects(chunk.objects.values())
                         self.load_img_chunk(chunk)
             self.screen.fill((0, 0, 0))
             self.camera.move()
@@ -190,7 +190,7 @@ class DrawWorld:
             if self.camera.camera_vis:
                 self.camera.show_camera(self.screen)
             for chunk in self.visible_chunks(self.app.game.world.chunks):
-                for obj in sorted(chunk.objs, key=lambda ob: ob.y):
+                for obj in sorted(chunk.objects, key=lambda ob: ob.y):
                     img = self.sprites.get(scale=self.camera.scale,
                                            key=obj.img_key)
                     pos = self.camera.pos_shift(obj.x, obj.y)

@@ -1,6 +1,5 @@
 import json
 from common import model
-from sqlalchemy import and_, insert
 from . import blueprint_game_objects, game_objects
 from common.config import Config
 
@@ -26,9 +25,7 @@ class Chunk(Storable):
 
     def __init__(self, id, x, y, biome):
         self.images = {}
-        self.creatures = []
-        self.items = []
-        self.buildings = []
+        self.object_ids = []
         self.id = id
         self.x = x
         self.y = y
@@ -42,37 +39,54 @@ class Chunk(Storable):
         if key not in self.images.keys():
             self.images[key] = new_img
 
-    @property
-    def objs(self):
-        return self.creatures + self.items + self.buildings
-
     @classmethod
     def load(cls, chunk):
         return cls(id=chunk.id, x=chunk.x, y=chunk.y, biome=chunk.biome)
 
-    def add_obj(self, obj):
-        if isinstance(obj, blueprint_game_objects.Item):
-            self.items.append(obj)
-        elif isinstance(obj, blueprint_game_objects.Creature):
-            self.creatures.append(obj)
-        else:
-            self.buildings.append(obj)
+    def add_obj(self, obj_id):
+        self.object_ids.append(obj_id)
+
+    def objects(self, world, base_cls):
+        for id in self.object_ids:
+            obj = world.get_object(obj_id=id)
+            if base_cls is None:
+                yield obj
+            elif isinstance(obj, base_cls):
+                yield obj
 
 
 class World(Storable):
     def __init__(self, type, id):
         self.id = id
         self.chunks = []
+        self._objects = {}
+
         self.time = 0
         self.max_day_time = 2400
         self.day = 0
         self.day_time = None
         self.type = type
 
+    def add_object(self, obj: blueprint_game_objects.ObjectBlueprint):
+        self._objects[obj.id] = obj
+
+    def pop_object(self, obj_id):
+        return self._objects.pop(obj_id)
+
+    def get_object(self, obj_id):
+        return self._objects[obj_id]
+
+    def objects(self, base_cls=None):
+        for obj in self._objects:
+            if base_cls is None:
+                yield obj
+            elif isinstance(obj, base_cls):
+                yield obj
+
     def switch_chunk(self, current_chunk: Chunk, obj):
         x, y = obj.chunk_indexes()
         if (x, y) != (current_chunk.x, current_chunk.y):
-            current_chunk.creatures.remove(obj)
+            self.pop_object(obj.id)
             self.chunks[y][x].creatures.append(obj)
 
     @classmethod
@@ -93,12 +107,10 @@ class World(Storable):
 
     def save(self, session):
         session.query(model.Object).filter(model.Object.world_id == self.id).delete()
-        chunks = session.query(model.Chunk).filter(model.Chunk.world_id == self.id).all()
-        for chunk in chunks:
-            game_chunk = self.chunks[chunk.y][chunk.x]
-            for obj in game_chunk.objs:
-                session.add(model.Object(id=obj.id, world_id=self.id, data=obj.to_json(), cls=obj.__class__.__name__))
-            chunk.biome = game_chunk.biome
+        # chunks = session.query(model.Chunk).filter(model.Chunk.world_id == self.id).all()
+        for obj in self.objects():
+            session.add(model.Object(id=obj.id, world_id=self.id, data=obj.to_json(), cls=obj.__class__.__name__))
+        # chunk.biome = game_chunk.biome
 
     @classmethod
     def from_db(cls, session, world_id):

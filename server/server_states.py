@@ -3,10 +3,11 @@ import threading
 import traceback
 from abc import ABC, abstractmethod
 from common.exchange import messages
-from common import model, game, world as world_base
+from common import model, world as world_base
 from sqlalchemy import or_
 import uuid
 from server.data_base import new_session
+from server.game import Game
 from common.utils import procedure_generation
 
 
@@ -15,12 +16,12 @@ class State(ABC):
         self.app = app
 
     @abstractmethod
-    def handle_messages(self, msg: messages.Message):
+    def handle_message(self, msg: messages.Message):
         pass
 
 
 class IdleState(State):
-    def handle_messages(self, msg: messages.Message):
+    def handle_message(self, msg: messages.Message):
         logging.info(f'handle message: {msg.title}: {msg.content}')
         if msg.title == messages.MessageType.RUN_GAME:
             with new_session() as session:
@@ -90,13 +91,12 @@ class GamingState(State):
         super().__init__(app=app)
         with new_session() as session:
             world = world_base.World.from_db(session, world_id)
-        self.app.game = game.Game(self.app, [starter_id], world_id)
-        self.app.game.world = world
+        self.app.game = Game(self.app, [starter_id], world)
         self.app.game.load_a_non_i()
-        self.app.game_thread = threading.Thread(target=self.app.game.update)
-        self.app.game_thread.start()
+        self.app.run_game()
 
-    def handle_messages(self, msg: messages.Message):
+
+    def handle_message(self, msg: messages.Message):
         if msg.title == messages.MessageType.CLIENT_READY:
             self.app.clients[msg.author] = 1
 
