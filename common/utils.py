@@ -162,6 +162,6 @@ def procedure_generation(world: model.World):
                         for i in range(random.randint(gen.min_num_in_chunk, gen.max_num_in_chunk)):
                             kwargs = json.loads(gen.init_data)
                             obj = vars(game_objects)[gen.cls].generation(chunk, kwargs)
-                            chunk.add_obj(obj)
+                            game_world.add_object(obj)
         game_world.save(session)
         session.commit()
