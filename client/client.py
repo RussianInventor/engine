@@ -1,4 +1,5 @@
 import sys
+from threading import Thread
 from common.exchange import Client
 from common.app import App
 from client.interface.interface import create_interface, create_app
@@ -13,6 +14,8 @@ class ClientApp(App):
 
         self.game = None
 
+        self.game_thread = None
+
     @property
     def user(self):
         return self.exchanger.user
@@ -20,3 +23,7 @@ class ClientApp(App):
     def run(self):
         self.interface.start()
         sys.exit(self.qt_app.exec_())
+
+    def run_game(self):
+        self.game_thread = Thread(target=self.game.update)
+        self.game_thread.start()

@@ -27,3 +27,6 @@ class Game:
                 for atr, val in obj.items():
                     creature.__setattr__(atr, val)
                 self.world.switch_chunk(current_chunk, creature)
+
+    def update(self):
+        self.process_updates()

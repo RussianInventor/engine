@@ -113,13 +113,7 @@ class GamingState(State):
                                        receiver="server")
         self.exchanger.send_message(new_message, answer_wait=False)
 
-        self.wait_thread = threading.Thread(target=self.update)
-        self.wait_thread.start()
-
-    def update(self):
-        while self.graphic_thread.is_alive():
-            time.sleep(1)
-        self.app.set_state(IdleState)
+        self.app.run_game()
 
     def handle_message(self, msg):
         if msg.title == messages.MessageType.WORLD_UPDATE:

@@ -43,10 +43,10 @@ class Chunk(Storable):
     def load(cls, chunk):
         return cls(id=chunk.id, x=chunk.x, y=chunk.y, biome=chunk.biome)
 
-    def add_obj(self, obj_id):
-        self.object_ids.append(obj_id)
+    def add_object(self, obj):
+        self.object_ids.append(obj.id)
 
-    def objects(self, world, base_cls):
+    def objects(self, world, base_cls=None):
         for id in self.object_ids:
             obj = world.get_object(obj_id=id)
             if base_cls is None:
@@ -77,7 +77,7 @@ class World(Storable):
         return self._objects[obj_id]
 
     def objects(self, base_cls=None):
-        for obj in self._objects:
+        for obj in self._objects.values():
             if base_cls is None:
                 yield obj
             elif isinstance(obj, base_cls):
@@ -102,14 +102,17 @@ class World(Storable):
             cur_cls = clses[obj.cls]
             g_obj = cur_cls.from_json(obj.data)
             x, y = g_obj.chunk_indexes()
-            new_world.chunks[y][x].add_obj(g_obj)
+            new_world.chunks[y][x].add_object(g_obj)
         return new_world
 
     def save(self, session):
         session.query(model.Object).filter(model.Object.world_id == self.id).delete()
         # chunks = session.query(model.Chunk).filter(model.Chunk.world_id == self.id).all()
         for obj in self.objects():
-            session.add(model.Object(id=obj.id, world_id=self.id, data=obj.to_json(), cls=obj.__class__.__name__))
+            session.add(model.Object(id=obj.id,
+                                     world_id=self.id,
+                                     data=obj.to_json(),
+                                     cls=obj.__class__.__name__))
         # chunk.biome = game_chunk.biome
 
     @classmethod
