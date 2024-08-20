@@ -139,7 +139,7 @@ class DrawWorld:
             self.camera.scale = scale
             for row in self.app.game.world.chunks:
                 for chunk in row:
-                    self.load_img_objects(chunk.objects.values())
+                    self.load_img_objects(list(chunk.objects(self.app.game.world)))
                     self.load_img_chunk(chunk)
         while True:
             frame_start = time.time()

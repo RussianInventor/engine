@@ -46,7 +46,7 @@ class Chunk(Storable):
     def add_obj(self, obj_id):
         self.object_ids.append(obj_id)
 
-    def objects(self, world, base_cls):
+    def objects(self, world, base_cls=None):
         for id in self.object_ids:
             obj = world.get_object(obj_id=id)
             if base_cls is None:
