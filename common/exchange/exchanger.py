@@ -87,7 +87,7 @@ class Exchanger(ABC):
         connection.send(message.json().encode('utf- 8'))
         if answer_wait:
             answer = read(connection)
-#             getattr(logging, log_level)(f'answer: {answer.json()}')
+            logging.debug(f'answer: {answer.json()}')
             return answer
 
     def read_message(self, connection_id) -> Message:
