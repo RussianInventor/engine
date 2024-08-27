@@ -119,19 +119,18 @@ def procedure_generation(world: model.World):
             water_num -= water_size
             water_size -= 1
             expansion(chunks=game_world.chunks, biome=model.Biome.WATER, x=x, y=y, num=water_size)
-            game_world.save(session)
         while desert_num > 1:
             desert_num -= stain(chunks=game_world.chunks, biome="desert",
                                 x=random.randint(0, world.size * Config.CHUNK_SIZE),
                                 y=random.randint(0, world.size * Config.CHUNK_SIZE),
                                 radius=math.sqrt(get_biome_size("desert", static_desert_num) / math.pi))
-            game_world.save(session)
         while mountains_num > 1:
             mountains_num -= stain(chunks=game_world.chunks, biome="mountains",
                                    x=random.randint(0, world.size * Config.CHUNK_SIZE),
                                    y=random.randint(0, world.size * Config.CHUNK_SIZE),
                                    radius=math.sqrt(get_biome_size("mountains", static_mountains_num) / math.pi))
-            game_world.save(session)
+
+        game_world.save(session)
         session.commit()
     with new_session() as session:
         for row in game_world.chunks:

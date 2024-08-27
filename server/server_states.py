@@ -8,7 +8,7 @@ from sqlalchemy import or_
 import uuid
 from server.data_base import new_session
 from server.game import Game
-from common.utils import procedure_generation
+from common.generation import procedure_generation
 
 
 class State(ABC):
