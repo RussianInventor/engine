@@ -1,5 +1,7 @@
 import json
+
 from common import model
+from server.data_base import upsert
 from . import blueprint_game_objects, game_objects
 from common.config import Config
 
@@ -92,8 +94,9 @@ class World(Storable):
     @classmethod
     def load(cls, world_obj, chunks_objs, object_objs):
         new_world = cls(world_obj.type, id=world_obj.id)
-        for chunk in chunks_objs:
-            if len(new_world.chunks) == chunk.y:
+
+        for chunk in sorted(chunks_objs, key=lambda c: c.y):
+            if chunk.y == len(new_world.chunks):
                 new_world.chunks.append([])
             new_world.chunks[-1].append(Chunk.load(chunk))
 
@@ -107,13 +110,25 @@ class World(Storable):
         return new_world
 
     def save(self, session):
-        session.query(model.Object).filter(model.Object.world_id == self.id).delete()
+        chunks_to_update = []
+        for row in self.chunks:
+            for chunk in row:
+                c = model.Chunk(id=chunk.id,
+                                world_id=self.id,
+                                x=chunk.x,
+                                y=chunk.y,
+                                biome=chunk.biome)
+                chunks_to_update.append(c)
+        upsert(session, chunks_to_update)
         # chunks = session.query(model.Chunk).filter(model.Chunk.world_id == self.id).all()
+
+        session.query(model.Object).filter(model.Object.world_id == self.id).delete()
         for obj in self.objects():
             session.add(model.Object(id=obj.id,
                                      world_id=self.id,
                                      data=obj.to_json(),
                                      cls=obj.__class__.__name__))
+
         # chunk.biome = game_chunk.biome
 
     @classmethod

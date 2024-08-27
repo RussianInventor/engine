@@ -41,6 +41,7 @@ class World(Base, Item):
     size = Column(INTEGER)
 
     def __init__(self, id):
+        super().__init__()
         for key, val in locals().items():
             self.__setattr__(key, val)
 
@@ -53,10 +54,13 @@ class Chunk(Base, Item):
     y = Column(INTEGER)
     biome = Column(TEXT, ForeignKey(ChunkType.type))
 
-    def __init__(self, id, world_id, x, y, biome: Biome):
+    def __init__(self, id, world_id, x, y, biome: Biome | str):
+        super().__init__()
         for key, val in locals().items():
             self.__setattr__(key, val)
-        self.biome = biome.value
+        if isinstance(biome, Biome):
+            biome = biome.value
+        self.biome = biome
 
 
 class Object(Base, Item):
