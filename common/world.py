@@ -87,7 +87,7 @@ class World(Storable):
         x, y = obj.chunk_indexes()
         if (x, y) != (current_chunk.x, current_chunk.y):
             self.pop_object(obj.id)
-            self.chunks[y][x].creatures.append(obj)
+            self.chunks[y][x].add_object(obj)
 
     @classmethod
     def load(cls, world_obj, chunks_objs, object_objs):
@@ -102,6 +102,7 @@ class World(Storable):
             cur_cls = clses[obj.cls]
             g_obj = cur_cls.from_json(obj.data)
             x, y = g_obj.chunk_indexes()
+            new_world.add_object(g_obj)
             new_world.chunks[y][x].add_object(g_obj)
         return new_world
 
