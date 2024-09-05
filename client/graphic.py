@@ -1,11 +1,12 @@
-import os.path
-import sys
+from typing import List
 import time
 import pygame
 from os import path
 
 import common.world
 from common.config import Config
+from common.blueprint_game_objects import ObjectBlueprint, Creature
+
 
 chunk_color = {"field": (0, 200, 0),
                "mountains": path.join("img", "mountain", "Mountain.png"),
@@ -123,12 +124,20 @@ class DrawWorld:
         self.app = app
         pygame.init()
         pygame.font.init()
-        self.font = pygame.font.SysFont("Consoles", 50)
+        self.big_font = pygame.font.SysFont("Consoles", 50)
+        self.small_font = pygame.font.SysFont("Consoles", 25)
         self.screen = pygame.display.set_mode((0, 0))
 
-    def show_debug(self, screen):
-        txt = self.font.render(f" fps: {self.camera.fps}", 0, [255, 255, 255])
+    def show_debug(self, screen, objects: List[ObjectBlueprint]):
+        txt = self.big_font.render(f" fps: {self.camera.fps}", 0, [255, 255, 255])
         screen.blit(txt, (5, 5))
+        for obj in objects:
+            text = f"{(round(obj.x, 1), round(obj.y, 1))}"
+            if isinstance(obj, Creature) and obj.brain is not None:
+                text += str(obj.brain.state)
+            txt = self.small_font.render(text, 0, [255, 255, 255])
+            pos = self.camera.pos_shift(obj.x, obj.y)
+            screen.blit(txt, pos)
 
     def update(self):
         if self.camera is None:
@@ -193,16 +202,19 @@ class DrawWorld:
             for chunk in self.visible_chunks(self.app.game.world.chunks):
                 for obj in sorted(list(chunk.objects(self.app.game.world)),
                                   key=lambda ob: ob.y):
-                    img = self.sprites.get(scale=self.camera.scale,
-                                           key=obj.img_key)
-                    pos = self.camera.pos_shift(obj.x, obj.y)
-                    self.screen.blit(img,
-                                     (pos[0] - obj.shift_img_x * img.get_size()[0],
-                                      pos[1] - obj.shift_img_y * img.get_size()[1]))
-            self.show_debug(self.screen)
+                    self.draw_obj(obj)
+            self.show_debug(self.screen, self.app.game.world.objects(Creature))
             pygame.display.update()
             frame_end = time.time()
             self.camera.fps = int(1 / (frame_end - frame_start))
+
+    def draw_obj(self, obj: ObjectBlueprint):
+        img = self.sprites.get(scale=self.camera.scale,
+                               key=obj.img_key)
+        pos = self.camera.pos_shift(obj.x, obj.y)
+        self.screen.blit(img,
+                         (pos[0] - obj.shift_img_x * img.get_size()[0],
+                          pos[1] - obj.shift_img_y * img.get_size()[1]))
 
     def visible_chunks(self, chunks):
         x = self.camera.x // Config.CHUNK_SIZE

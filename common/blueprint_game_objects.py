@@ -21,6 +21,9 @@ class ObjectBlueprint(ABC):
         self._img_name = None
         self.shift_img_x = 0.5
         self.shift_img_y = 1
+        self.old_x = None
+        self.old_y = None
+
         for k, v in kwargs.items():
             self.__setattr__(k, v)
 
@@ -53,7 +56,14 @@ class ObjectBlueprint(ABC):
     def chunk_indexes(self):
         x = self.x // Config.CHUNK_SIZE
         y = self.y // Config.CHUNK_SIZE
-        return x, y
+        return int(x), int(y)
+
+    def old_chunk_indexes(self):
+        if self.old_x is None or self.old_y is None:
+            return None, None
+        x = self.old_x // Config.CHUNK_SIZE
+        y = self.old_y // Config.CHUNK_SIZE
+        return int(x), int(y)
 
     @classmethod
     def generation(cls, chunk, kwargs):

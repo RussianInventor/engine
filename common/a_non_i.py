@@ -35,6 +35,9 @@ class State(ABC):
     def update(self):
         pass
 
+    def __repr__(self):
+        return self.__class__.__name__
+
 
 class CalmState(State):
     def __init__(self, context):
@@ -45,11 +48,12 @@ class CalmState(State):
         self.target = (random.randint(0, len(self.context.world.chunks)*Config.CHUNK_SIZE),
                        random.randint(0, len(self.context.world.chunks)*Config.CHUNK_SIZE))
         self.context.obj.speed(*self.target)
-        print(self.context.obj.id, self.target, "sel_t")
 
     def update(self):
         if self.target is None:
             self.select_target()
         if self.context.obj.move(*self.target):
-            print(self.context.obj.id, self.target, "upd")
             self.target = None
+
+    def __repr__(self):
+        return f'{self.__class__.__name__} (target={self.target})'

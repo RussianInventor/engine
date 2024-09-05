@@ -85,11 +85,15 @@ class World(Storable):
             elif isinstance(obj, base_cls):
                 yield obj
 
-    def switch_chunk(self, current_chunk: Chunk, obj):
+    def switch_chunk(self, obj):
+        old_x, old_y = obj.old_chunk_indexes()
         x, y = obj.chunk_indexes()
-        if (x, y) != (current_chunk.x, current_chunk.y):
-            self.pop_object(obj.id)
-            self.chunks[y][x].add_object(obj)
+        if old_y == x and old_y == y:
+            return
+        if old_x is not None:
+            if obj.id in self.chunks[old_x][old_y].object_ids:
+                self.chunks[y][x].object_ids.remove(obj.id)
+        self.chunks[y][x].add_object(obj)
 
     @classmethod
     def load(cls, world_obj, chunks_objs, object_objs):

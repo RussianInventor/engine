@@ -21,12 +21,12 @@ class Game:
             for obj in msg.content["objects"]:
                 y = int(obj.pop("old_y") // GameConfig.CHUNK_SIZE)
                 x = int(obj.pop("old_x") // GameConfig.CHUNK_SIZE)
-                current_chunk = self.app.game.world.chunks[y][x]
-                id = obj.pop("id")
-                creature = current_chunk.objects[id]
+                obj_id = obj.pop("id")
+                creature = self.world.get_object(obj_id)
                 for atr, val in obj.items():
                     creature.__setattr__(atr, val)
-                self.world.switch_chunk(current_chunk, creature)
+                self.world.switch_chunk(creature)
 
     def update(self):
-        self.process_updates()
+        while True:
+            self.process_updates()
