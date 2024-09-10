@@ -78,13 +78,16 @@ class Item(ObjectBlueprint):
 
 
 class Creature(ObjectBlueprint):
-    def __init__(self, x, y, hp, max_hp, v, **kwargs):
+    forbidden_chunks = ()
+
+    def __init__(self, x, y, hp, max_hp, v, vision, **kwargs):
         super().__init__(x=x, y=y, **kwargs)
         self.v = v
         self.vx = 0
         self.vy = 0
         self._hp = hp
         self._max_hp = max_hp
+        self.vision = vision
         self.brain = None
 
     @property

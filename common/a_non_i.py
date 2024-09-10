@@ -45,8 +45,12 @@ class CalmState(State):
         self.target = None
 
     def select_target(self):
-        self.target = (random.randint(0, len(self.context.world.chunks)*Config.CHUNK_SIZE),
-                       random.randint(0, len(self.context.world.chunks)*Config.CHUNK_SIZE))
+        self.target = (0, 0)
+        chu = self.context.world.define_chunk(*self.target).biome
+        while chu in self.context.obj.forbidden_chunks:
+            self.target = (random.randint(self.context.obj.x-self.context.obj.vision, self.context.obj.x+self.context.obj.vision),
+                           random.randint(self.context.obj.y-self.context.obj.vision, self.context.obj.y+self.context.obj.vision))
+            chu = self.context.world.define_chunk(*self.target).biome
         self.context.obj.speed(*self.target)
 
     def update(self):

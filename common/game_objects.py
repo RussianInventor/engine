@@ -2,6 +2,7 @@ from . import blueprint_game_objects
 import random
 import os
 from .config import Config
+from .model import Biome
 
 
 class Tree(blueprint_game_objects.Building):
@@ -15,6 +16,8 @@ class Tree(blueprint_game_objects.Building):
 
 
 class Pig(blueprint_game_objects.Creature):
+    forbidden_chunks = (Biome.WATER, Biome.MEGA_MOUNTAINS, Biome.MOUNTAINS)
+
     def __init__(self, x, y, _hp, max_hp=None, **kwargs):
         if max_hp is None:
             max_hp = _hp

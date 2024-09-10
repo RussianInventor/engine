@@ -6,14 +6,15 @@ from os import path
 import common.world
 from common.config import Config
 from common.blueprint_game_objects import ObjectBlueprint, Creature
+from common.model import Biome
+DEBUG = False
 
-
-chunk_color = {"field": (0, 200, 0),
-               "mountains": path.join("img", "mountain", "Mountain.png"),
-               "beach": (250, 250, 0),
-               "water": (50, 50, 200),
-               "desert": path.join("img", "desert", "desert1.png"),
-               "MEGA_MOUNTAINS": path.join("img", "mountain", "Vulcano.png")
+chunk_color = {Biome("field"): (0, 200, 0),
+               Biome("mountains"): path.join("img", "mountain", "Mountain.png"),
+               Biome("beach"): (250, 250, 0),
+               Biome("water"): (50, 50, 200),
+               Biome("desert"): path.join("img", "desert", "desert1.png"),
+               Biome("MEGA_MOUNTAINS"): path.join("img", "mountain", "Vulcano.png")
                }
 
 
@@ -140,6 +141,7 @@ class DrawWorld:
             screen.blit(txt, pos)
 
     def update(self):
+        global DEBUG
         if self.camera is None:
             self.camera = Camera(x=len(self.app.game.world.chunks) / 2,
                                  y=len(self.app.game.world.chunks) / 2)
@@ -171,6 +173,8 @@ class DrawWorld:
                         pygame.display.quit()
                         pygame.quit()
                         return
+                    if event.key == pygame.K_F3:
+                        DEBUG = not DEBUG
                     if event.key == pygame.K_s:
                         self.camera.down()
                     if event.key == pygame.K_w:
@@ -203,7 +207,8 @@ class DrawWorld:
                 for obj in sorted(list(chunk.objects(self.app.game.world)),
                                   key=lambda ob: ob.y):
                     self.draw_obj(obj)
-            self.show_debug(self.screen, self.app.game.world.objects(Creature))
+            if DEBUG:
+                self.show_debug(self.screen, self.app.game.world.objects(Creature))
             pygame.display.update()
             frame_end = time.time()
             self.camera.fps = int(1 / (frame_end - frame_start))

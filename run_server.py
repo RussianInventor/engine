@@ -29,7 +29,7 @@ f.close()
 logging.basicConfig(format="%(levelname)s \t %(pathname)s \t %(message)s", filemode="w")
 log = logging.getLogger()
 log.addHandler(logging.FileHandler("log/server.log"))
-log.setLevel(logging.DEBUG)
+log.setLevel(logging.INFO)
 
 server = ServerApp(Config.host, port)
 server.set_state(IdleState)

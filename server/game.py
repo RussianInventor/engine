@@ -28,7 +28,7 @@ class Game:
             for creature in self.world.objects(base_cls=Creature):
                 updates.append(creature.brain.update())
             self.app.exchanger.broadcast(chunks=[], objects=updates)
-            time.sleep(1)
+            time.sleep(0.1)
             duration = time.time() - start_time
             if duration < server_config.Config.tick_duration:
                 time.sleep(server_config.Config.tick_duration - duration)

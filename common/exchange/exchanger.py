@@ -173,7 +173,7 @@ class Client(Exchanger):
     def server_listen(self, connection):
         while True:
             msg = read(connection)
-            logging.info(f'get msg from server: {msg.json()}')
+            logging.debug(f'get msg from server: {msg.json()}')
             self.app.state.handle_message(msg=msg)
 
     def get_sending_socket(self, receiver=None):

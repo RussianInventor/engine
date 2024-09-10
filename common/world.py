@@ -43,7 +43,11 @@ class Chunk(Storable):
 
     @classmethod
     def load(cls, chunk):
-        return cls(id=chunk.id, x=chunk.x, y=chunk.y, biome=chunk.biome)
+        if not isinstance(chunk.biome, model.Biome):
+            biome = model.Biome(chunk.biome)
+        else:
+            biome = chunk.biome
+        return cls(id=chunk.id, x=chunk.x, y=chunk.y, biome=biome)
 
     def add_object(self, obj):
         self.object_ids.append(obj.id)
@@ -68,6 +72,9 @@ class World(Storable):
         self.day = 0
         self.day_time = None
         self.type = type
+
+    def define_chunk(self, x, y) -> Chunk:
+        return self.chunks[y//Config.CHUNK_SIZE][x//Config.CHUNK_SIZE]
 
     def add_object(self, obj: blueprint_game_objects.ObjectBlueprint):
         self._objects[obj.id] = obj
