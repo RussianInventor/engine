@@ -51,6 +51,10 @@ class IdleState(State):
 
         if msg.title == messages.MessageType.CREATE_WORLD:
             world_id = str(uuid.uuid4())
+            new_game = model.GameInfo(game_id=uuid.uuid4(),
+                                      game_name=msg.content["name"],
+                                      world_ids=[world_id],
+                                      players=[])
             new_world = model.World(world_id)
             new_world.type = msg.content["type"]
             new_world.owner = msg.content["owner"]
@@ -95,8 +99,6 @@ class GamingState(State):
         self.app.game.load_a_non_i()
         self.app.run_game()
 
-
     def handle_message(self, msg: messages.Message):
         if msg.title == messages.MessageType.CLIENT_READY:
             self.app.clients[msg.author] = 1
-

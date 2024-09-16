@@ -149,7 +149,7 @@
       <item row="4" column="0" colspan="2">
        <widget class="QPushButton" name="new_world">
         <property name="text">
-         <string>Создать мир</string>
+         <string>Создать игру</string>
         </property>
        </widget>
       </item>
@@ -164,7 +164,7 @@
        <widget class="QComboBox" name="world_selection">
         <item>
          <property name="text">
-          <string>Новый мир</string>
+          <string>Новая игра</string>
          </property>
         </item>
         <item>
@@ -264,7 +264,7 @@
       <item row="0" column="2">
        <widget class="QLineEdit" name="world_name">
         <property name="text">
-         <string>new_world</string>
+         <string>new_game</string>
         </property>
        </widget>
       </item>

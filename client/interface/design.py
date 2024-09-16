@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'client/untitled.ui'
+# Form implementation generated from reading ui file 'client/interface/client.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.10
 #
@@ -153,16 +153,16 @@ class Ui_MainWindow(object):
         self.portEntry.setText(_translate("MainWindow", "4444"))
         self.connectButton.setText(_translate("MainWindow", "Подключиться"))
         self.label.setText(_translate("MainWindow", "Хост:"))
-        self.new_world.setText(_translate("MainWindow", "Создать мир"))
+        self.new_world.setText(_translate("MainWindow", "Создать игру"))
         self.play_button.setText(_translate("MainWindow", "Играть"))
-        self.world_selection.setItemText(0, _translate("MainWindow", "Новый мир"))
+        self.world_selection.setItemText(0, _translate("MainWindow", "Новая игра"))
         self.delete_button.setText(_translate("MainWindow", "Удалить"))
         self.label_3.setText(_translate("MainWindow", " Размер:"))
         self.switch_size.setItemText(0, _translate("MainWindow", "test"))
         self.switch_size.setItemText(1, _translate("MainWindow", "small"))
         self.switch_size.setItemText(2, _translate("MainWindow", "medium"))
         self.switch_size.setItemText(3, _translate("MainWindow", "big"))
-        self.world_name.setText(_translate("MainWindow", "new_world"))
+        self.world_name.setText(_translate("MainWindow", "new_game"))
         self.create_button.setText(_translate("MainWindow", "Создать"))
         self.world_private.setText(_translate("MainWindow", "Приватный"))
         self.label_5.setText(_translate("MainWindow", "   Имя:"))

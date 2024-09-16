@@ -4,9 +4,9 @@ from client.config import Config
 from client.client_state import IdleState, GamingState
 
 subprocess.call(("pyuic5",
-                 "client/client.ui",
+                 "client/interface/client.ui",
                  "-o",
-                 "client/design.py"))
+                 "client/interface/design.py"))
 import sys
 from PyQt5 import QtWidgets
 from client.interface import design

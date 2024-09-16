@@ -1,7 +1,8 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, ForeignKey
 from enum import Enum
-from sqlalchemy.dialects.postgresql import TEXT, TIMESTAMP, INTEGER, FLOAT, BOOLEAN, JSON
+from sqlalchemy.dialects.postgresql import TEXT, TIMESTAMP, INTEGER, FLOAT, BOOLEAN, JSON, ARRAY
+
 Base = declarative_base()
 
 
@@ -86,6 +87,19 @@ class ObjectGen(Base, Item):
     init_data = Column(TEXT)
 
     def __init__(self, cls, biome):
+        super().__init__()
+        for key, val in locals().items():
+            self.__setattr__(key, val)
+
+
+class GameInfo(Base, Item):
+    __tablename__ = "game_info"
+    game_id = Column(TEXT, primary_key=True)
+    game_name = Column(TEXT)
+    world_ids = Column(ARRAY(TEXT))
+    players = Column(JSON)
+
+    def __init__(self, game_id, game_name, world_ids, players):
         super().__init__()
         for key, val in locals().items():
             self.__setattr__(key, val)
