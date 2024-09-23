@@ -2,6 +2,8 @@ import time
 import threading
 from abc import ABC
 from collections import namedtuple
+
+from common.exchange.messages import DeleteGameRequest, CreateGameRequest, GameInfo
 from common.model import Object
 
 import common.world
@@ -46,40 +48,30 @@ class IdleState(State):
     #     self.exchanger.send_message(new_message)
 
     def get_world(self):
-        new_message = messages.Message(connection=self.exchanger.connection,
-                                       title=messages.MessageType.GET_WORLD,
-                                       time=time.time(),
-                                       content={},
+        new_message = messages.Message(type=messages.MessageType.GET_WORLD,
                                        author=self.exchanger.user.user_id,
-                                       receiver="server.py")
+                                       receiver="server")
         answer = self.exchanger.send_message(new_message)
-        if answer.has_error():
-            return []
-        return answer.content.get('worlds')
+        return answer.content.worlds
 
     def delete_world(self, id, owner):
-        new_message = messages.Message(connection=self.exchanger.connection,
-                                       title=messages.MessageType.DELETE_WORLD,
-                                       time=time.time(),
-                                       content={"id": id},
+        new_message = messages.Message(type=messages.MessageType.DELETE_GAME,
+                                       content=DeleteGameRequest(game_id=id),
                                        author=owner,
-                                       receiver="server.py")
+                                       receiver="server")
         answer = self.exchanger.send_message(new_message)
 
     def create_world(self, name, type, private, owner, size):
-        new_message = messages.Message(connection=self.exchanger.connection,
-                                       title=messages.MessageType.CREATE_WORLD,
-                                       time=time.time(),
-                                       content={"type": type,
-                                                "owner": owner,
-                                                "private": private,
-                                                "name": name,
-                                                "size": size},
-                                       author=owner,
-                                       receiver="server.py")
-        print(new_message.content)
+        new_message = messages.Message(type=messages.MessageType.CREATE_GAME,
+                                       content=CreateGameRequest(
+                                           game=GameInfo(
+                                               owner=owner,
+                                               private=private,
+                                               name=name,
+                                               size=size),
+                                           author=owner,
+                                           receiver="server"))
         answer = self.exchanger.send_message(new_message)
-        print('>>>', answer)
 
 
 class GamingState(State):
@@ -96,8 +88,8 @@ class GamingState(State):
         Chunk = namedtuple('Chunk', answer.content['chunks'][0])
 
         world = common.world.World.load(world_obj=World(**answer.content['world']),
-                                      chunks_objs=[Chunk(**c) for c in answer.content['chunks']],
-                                      object_objs=[Object(**o) for o in answer.content['objects']])
+                                        chunks_objs=[Chunk(**c) for c in answer.content['chunks']],
+                                        object_objs=[Object(**o) for o in answer.content['objects']])
         self.app.game = Game(app=self.app,
                              players=[],
                              world=world)
@@ -116,5 +108,5 @@ class GamingState(State):
         self.app.run_game()
 
     def handle_message(self, msg):
-        if msg.title == messages.MessageType.WORLD_UPDATE:
+        if msg.type == messages.MessageType.WORLD_UPDATE:
             self.app.game.update_queue.put(msg)

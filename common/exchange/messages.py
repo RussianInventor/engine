@@ -1,56 +1,86 @@
-import json
-import time as t
-from socket import socket
+from pydantic import BaseModel, Field
+from typing import List
+import time
+from enum import Enum
 
 
-class MessageType:
+class MessageType(Enum):
     CONNECT = "connect"
     GET_WORLD = "get_world"
+    GET_WORLD_RESPONSE = "get_world_response"
     RUN_GAME = "run_game"
-    CREATE_WORLD = "create_world"
+    CREATE_GAME = "create_world"
     WORLD_LIST = "world_list"
-    DELETE_WORLD = "delete_world"
+    DELETE_GAME = "delete_world"
     WORLD_UPDATE = "world_update"
     CLIENT_READY = "client_ready"
+    RESULT = 'result'
 
 
-class Message:
-    def __init__(self, connection: socket, title: str, time: float, content: dict, author: str, receiver: str):
-        self.connection = connection
-        self.title = title
-        if time is None:
-            self.time = t.time()
-        else:
-            self.time = time
-        self.author = author
-        self.receiver = receiver
-        self.content = content
+class GameInfo(BaseModel):
+    id: str | None
+    name: str
+    owner: str
+    private: bool
+    size: int
 
-    @property
-    def type(self):
-        return self.title
 
-    @classmethod
-    def from_json(cls, connection, data):
-        data = json.loads(data)
-        return Message(connection=connection, **data.items())
+class ResultResponse(BaseModel):
+    result: str
+    error: str | None = None
+    details: str | None = None
 
-    def json(self):
-        data = {'title': self.title,
-                'time': self.time,
-                'author': self.author,
-                'receiver': self.receiver,
-                'content': self.content}
-        return json.dumps(data)
 
-    def answer(self, content: dict):
-        msg = Message(connection=self.connection,
-                      title=f're:{self.title}',
-                      content=content,
-                      time=t.time(),
-                      author=self.receiver,
-                      receiver=self.author)
-        self.connection.send(msg.json().encode('utf-8'))
+########################################################################################################################
+class ConnectRequest(BaseModel):
+    port: int
 
-    def has_error(self):
-        return 'error' in self.content.keys()
+
+########################################################################################################################
+
+class GetWorldResponse(BaseModel):
+    worlds: List[dict]
+
+
+########################################################################################################################
+class CreateGameRequest(BaseModel):
+    game: GameInfo
+
+
+class CreateGameResponse(BaseModel):
+    game: GameInfo
+
+
+########################################################################################################################
+class RunGameRequest(BaseModel):
+    world_id: str
+
+
+class RunGameResponse(BaseModel):
+    world: dict
+    chunks: list
+    objects: list
+
+
+########################################################################################################################
+class DeleteGameRequest(BaseModel):
+    game_id: str
+
+
+########################################################################################################################
+class WorldUpdate(BaseModel):
+    chunks: list
+    objects: list
+
+
+########################################################################################################################
+class Message(BaseModel):
+    type: MessageType
+    time: float = Field(default_factory=time.time)
+    author: str
+    receiver: str
+
+    content: (None | ResultResponse | ConnectRequest | GetWorldResponse |
+              CreateGameRequest | CreateGameResponse |
+              RunGameRequest | RunGameResponse |
+              DeleteGameRequest | WorldUpdate) = None

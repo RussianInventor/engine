@@ -5,7 +5,10 @@ import queue
 import threading
 import time
 from abc import ABC, abstractmethod
-from .messages import Message, MessageType
+
+from pyexpat.errors import messages
+
+from .messages import Message, MessageType, ResultResponse, ConnectRequest
 
 
 class User:
@@ -30,8 +33,8 @@ def read(sock):
         else:
             break
 
-    if 'title' in message.keys():
-        return Message(connection=sock, **message)
+    if 'type' in message.keys():
+        return Message(**message)
     else:
         return message
 
@@ -117,12 +120,12 @@ class Server(Exchanger):
         logging.debug(f'listen on port {self.main_port}...')
         main_socket.listen(self.backlog)
         while True:
-            try:
-                sock, address = main_socket.accept()
-                logging.debug(f'accept {address}')
-                self.new_connection(sock, address)
-            except Exception as error:
-                pass
+            # try:
+            sock, address = main_socket.accept()
+            logging.debug(f'accept {address}')
+            self.new_connection(sock, address)
+            # except Exception as error:
+            #     pass
 
     def listen_clients(self):
         logging.debug('listen clients')
@@ -140,9 +143,12 @@ class Server(Exchanger):
             client_id = msg.author
             self.connections[client_id] = sock
             self.receivers[client_id] = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            logging.debug(f'try to connect to {address[0]}:{msg.content.get("port")}')
-            msg.answer({'result': 'success'})
-            self.receivers[client_id].connect((address[0], msg.content.get("port")))
+            logging.debug(f'try to connect to {address[0]}:{msg.content.port}')
+            sock.send(Message(type=MessageType.RESULT,
+                              author='server',
+                              receiver=msg.author,
+                              content=ResultResponse(result='success')).json().encode('utf-8'))
+            self.receivers[client_id].connect((address[0], msg.content.port))
             self.app.clients[client_id] = 0
         else:
             print('fail')
@@ -160,6 +166,11 @@ class Server(Exchanger):
                                       author="server",
                                       receiver=player_id)
                 self.send_message(new_message, self.receivers[player_id], answer_wait=False, log_level="debug")
+
+    def answer(self, msg, receiver):
+        self.send_message(message=msg,
+                          connection=self.connections[receiver],
+                          answer_wait=False)
 
 
 class Client(Exchanger):
@@ -205,12 +216,10 @@ class Client(Exchanger):
         logging.info(f'connecting to {host}:{port}...')
         listening_thread = threading.Thread(target=self.listen)
         listening_thread.start()
-        msg = Message(connection=self.connection,
-                      title='connect',
-                      time=time.time(),
-                      content={'port': self.listening_port},
+        msg = Message(type=MessageType.CONNECT,
+                      content=ConnectRequest(port=self.listening_port),
                       author=name,
-                      receiver='server.py')
+                      receiver='server')
         try:
             self.connection.connect((host, port))
             self.send_message(msg)

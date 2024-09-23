@@ -3,7 +3,6 @@ import threading
 from common.exchange import Server
 from common.app import App
 
-from .server_states import State
 
 
 class ServerApp(App):

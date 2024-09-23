@@ -36,12 +36,10 @@ class World(Base, Item):
     __tablename__ = 'worlds'
     id = Column(TEXT, primary_key=True)
     type = Column(TEXT, ForeignKey(WorldType.type))
-    owner = Column(TEXT)
-    private = Column(BOOLEAN)
     name = Column(TEXT)
     size = Column(INTEGER)
 
-    def __init__(self, id):
+    def __init__(self, id, type, name, size):
         super().__init__()
         for key, val in locals().items():
             self.__setattr__(key, val)
@@ -98,8 +96,10 @@ class GameInfo(Base, Item):
     game_name = Column(TEXT)
     world_ids = Column(ARRAY(TEXT))
     players = Column(JSON)
+    private = Column(BOOLEAN)
+    owner = Column(TEXT)
 
-    def __init__(self, game_id, game_name, world_ids, players):
+    def __init__(self, game_id, game_name, world_ids, players, private, owner):
         super().__init__()
         for key, val in locals().items():
             self.__setattr__(key, val)
