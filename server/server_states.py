@@ -2,12 +2,14 @@ import logging
 import threading
 import traceback
 from abc import ABC, abstractmethod
+
+from client.client_state import GamingState
 from common.exchange import messages, Message
 from common import model, world as world_base
 from sqlalchemy import or_
 import uuid
 
-from common.exchange.messages import MessageType, GetWorldResponse, ResultResponse
+from common.exchange.messages import MessageType, GetGamesResponse, ResultResponse, GameInfo
 from server.server import ServerApp
 from server.data_base import new_session
 from server.game import Game
@@ -42,20 +44,23 @@ class IdleState(State):
                 msg.answer(content=content)
             self.app.set_state(GamingState, world_id=msg.content["world_id"], starter_id=msg.author)
 
-        if msg.type == messages.MessageType.GET_WORLD:
+        if msg.type == messages.MessageType.GET_GAMES:
             with new_session() as session:
                 q = session.query(model.GameInfo)
                 q = q.filter(or_(model.GameInfo.private == False,
                                  model.GameInfo.owner == msg.author))
-                worlds = q.all()
+                games = q.all()
             self.app.exchanger.answer(
                 msg=Message(
-                    type=MessageType.GET_WORLD_RESPONSE,
+                    type=MessageType.GET_GAMES_RESPONSE,
                     author='server',
                     receiver=msg.author,
-                    content=GetWorldResponse(
-                        worlds=[{c.name: i.__getattribute__(c.name) for c in i.__table__.c} for i in worlds])
-                ),
+                    content=GetGamesResponse(
+                        games=[GameInfo(id=g.game_id,
+                                         name=g.game_name,
+                                         owner=g.owner,
+                                         private=g.private) for g in games]
+                    )),
                 receiver=msg.author)
             # msg.answer(
             #     content={"worlds": [{c.name: i.__getattribute__(c.name) for c in i.__table__.c} for i in worlds]})
@@ -78,7 +83,7 @@ class IdleState(State):
             with new_session(expire_on_commit=False) as session:
                 session.add(new_game)
                 session.add(new_world)
-                session.commit()
+                session.flush()
                 for x in range(new_world.size):
                     for y in range(new_world.size):
                         session.add(model.Chunk(uuid.uuid4(), new_world.id,

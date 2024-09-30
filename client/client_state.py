@@ -48,11 +48,11 @@ class IdleState(State):
     #     self.exchanger.send_message(new_message)
 
     def get_world(self):
-        new_message = messages.Message(type=messages.MessageType.GET_WORLD,
+        new_message = messages.Message(type=messages.MessageType.GET_GAMES,
                                        author=self.exchanger.user.user_id,
                                        receiver="server")
         answer = self.exchanger.send_message(new_message)
-        return answer.content.worlds
+        return answer.content.games
 
     def delete_world(self, id, owner):
         new_message = messages.Message(type=messages.MessageType.DELETE_GAME,

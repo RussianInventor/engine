@@ -28,6 +28,8 @@ def new_session(expire_on_commit=True):
 
 
 def upsert(session: Session, objects: List[model.Base]):
+    if not objects:
+        return
     table = objects[0].__table__
     stmt = insert(table).values([{c.name: getattr(obj, c.name) for c in table.c} for obj in objects])
 

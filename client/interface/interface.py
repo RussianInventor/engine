@@ -75,8 +75,8 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
 
     def load_worlds(self):
         self.world_selection.clear()
-        for world in self.app.state.execute("get_world"):
-            self.world_selection.addItem(world['name'], world['id'])
+        for game in self.app.state.execute("get_world").games:
+            self.world_selection.addItem(game.game_name, game.game_id)
 
 
 def create_interface(app):
