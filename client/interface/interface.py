@@ -45,7 +45,6 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
     def create_world(self):
         self.app.state.execute("create_world",
                                {"name": self.world_name.text(),
-                                "type": "ground",
                                 "private": self.world_private.isChecked(),
                                 "owner": self.app.exchanger.user.user_id,
                                 "size": self.switch_size.currentData()})
@@ -63,7 +62,7 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
             self.app.set_state(IdleState)
             self.show_frame('idle_frame', on_load=self.load_worlds)
         else:
-            QtWidgets.QMessageBox(self, text="Проверьте адрес сервера и порт").show()
+            QtWidgets.QMessageBox(self, text="Check server's address and port").show()
 
     def show_frame(self, frame_name, on_load=None):
         if on_load is not None:

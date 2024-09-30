@@ -44,16 +44,17 @@ class IdleState(State):
 
         if msg.type == messages.MessageType.GET_WORLD:
             with new_session() as session:
-                q = session.query(model.World)
-                q = q.filter(or_(model.World.private == False,
-                                 model.World.owner == msg.author))
+                q = session.query(model.GameInfo)
+                q = q.filter(or_(model.GameInfo.private == False,
+                                 model.GameInfo.owner == msg.author))
                 worlds = q.all()
             self.app.exchanger.answer(
                 msg=Message(
                     type=MessageType.GET_WORLD_RESPONSE,
                     author='server',
                     receiver=msg.author,
-                    content=GetWorldResponse(worlds=[{c.name: i.__getattribute__(c.name) for c in i.__table__.c} for i in worlds])
+                    content=GetWorldResponse(
+                        worlds=[{c.name: i.__getattribute__(c.name) for c in i.__table__.c} for i in worlds])
                 ),
                 receiver=msg.author)
             # msg.answer(
@@ -86,6 +87,8 @@ class IdleState(State):
                     session.commit()
                 except Exception as err:
                     self.app.exchanger.answer(msg=Message(type=MessageType.RESULT,
+                                                          author="server",
+                                                          receiver=msg.author,
                                                           content=ResultResponse(result='fail',
                                                                                  error=str(err),
                                                                                  details=traceback.format_exc())))
@@ -93,6 +96,8 @@ class IdleState(State):
                     logging.error(traceback.format_exc())
                 else:
                     self.app.exchanger.answer(msg=Message(type=MessageType.RESULT,
+                                                          author="server",
+                                                          receiver=msg.author,
                                                           content=ResultResponse(result='success')))
                     # msg.answer(content={c.name: new_world.__getattribute__(c.name) for c in new_world.__table__.c})
                 procedure_generation(new_world)
@@ -109,9 +114,13 @@ class IdleState(State):
                     session.delete(session.query(model.GameInfo).filter(game_id == game_id).first())
                     session.commit()
                     self.app.exchanger.answer(msg=Message(type=MessageType.RESULT,
+                                                          author="server",
+                                                          receiver=msg.author,
                                                           content=ResultResponse(result='success')))
                 except Exception as err:
                     self.app.exchanger.answer(msg=Message(type=MessageType.RESULT,
+                                                          author="server",
+                                                          receiver=msg.author,
                                                           content=ResultResponse(result='fail',
                                                                                  error=str(err),
                                                                                  details=traceback.format_exc())))

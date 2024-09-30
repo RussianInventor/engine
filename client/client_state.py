@@ -61,16 +61,17 @@ class IdleState(State):
                                        receiver="server")
         answer = self.exchanger.send_message(new_message)
 
-    def create_world(self, name, type, private, owner, size):
+    def create_world(self, name, private, owner, size):
         new_message = messages.Message(type=messages.MessageType.CREATE_GAME,
+                                       author=owner,
+                                       receiver="server",
                                        content=CreateGameRequest(
                                            game=GameInfo(
                                                owner=owner,
+                                               id=None,
                                                private=private,
                                                name=name,
-                                               size=size),
-                                           author=owner,
-                                           receiver="server"))
+                                               size=size)))
         answer = self.exchanger.send_message(new_message)
 
 

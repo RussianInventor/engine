@@ -167,7 +167,9 @@ class Server(Exchanger):
                                       receiver=player_id)
                 self.send_message(new_message, self.receivers[player_id], answer_wait=False, log_level="debug")
 
-    def answer(self, msg, receiver):
+    def answer(self, msg, receiver=None):
+        if receiver is None:
+            receiver = msg.receiver
         self.send_message(message=msg,
                           connection=self.connections[receiver],
                           answer_wait=False)

@@ -5,6 +5,7 @@ from server.server import ServerApp
 from server.config import Config
 import threading
 from server.server_states import IdleState
+import sys
 
 
 class Logger(logging.Logger):
@@ -30,7 +31,7 @@ logging.basicConfig(format="%(levelname)s \t %(pathname)s \t %(message)s", filem
 log = logging.getLogger()
 log.addHandler(logging.FileHandler("log/server.log"))
 log.setLevel(logging.DEBUG)
-
+sys.stderr = open("log/server.err", mode="a")
 server = ServerApp(Config.host, port)
 server.set_state(IdleState)
 server.run()
