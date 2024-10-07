@@ -47,21 +47,21 @@ class IdleState(State):
     #                                    receiver="server.py")
     #     self.exchanger.send_message(new_message)
 
-    def get_world(self):
+    def get_games(self):
         new_message = messages.Message(type=messages.MessageType.GET_GAMES,
                                        author=self.exchanger.user.user_id,
                                        receiver="server")
         answer = self.exchanger.send_message(new_message)
         return answer.content.games
 
-    def delete_world(self, id, owner):
+    def delete_game(self, id, owner):
         new_message = messages.Message(type=messages.MessageType.DELETE_GAME,
                                        content=DeleteGameRequest(game_id=id),
                                        author=owner,
                                        receiver="server")
         answer = self.exchanger.send_message(new_message)
 
-    def create_world(self, name, private, owner, size):
+    def create_game(self, name, private, owner, size):
         new_message = messages.Message(type=messages.MessageType.CREATE_GAME,
                                        author=owner,
                                        receiver="server",

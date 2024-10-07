@@ -57,9 +57,9 @@ class IdleState(State):
                     receiver=msg.author,
                     content=GetGamesResponse(
                         games=[GameInfo(id=g.game_id,
-                                         name=g.game_name,
-                                         owner=g.owner,
-                                         private=g.private) for g in games]
+                                        name=g.game_name,
+                                        owner=g.owner,
+                                        private=g.private) for g in games]
                     )),
                 receiver=msg.author)
             # msg.answer(
@@ -111,11 +111,11 @@ class IdleState(State):
 
             with new_session() as session:
                 try:
-                    world = session.query(model.GameInfo).filter(model.GameInfo.game_id == game_id)
+                    game_info = session.query(model.GameInfo).filter(model.GameInfo.game_id == game_id).first()
 
-                    session.query(model.Object).filter(model.Object.world_id == world.id).delete()
-                    session.query(model.Chunk).filter(model.Chunk.world_id == world.id).delete()
-                    session.delete(world)
+                    session.query(model.Object).filter(model.Object.world_id.in_(game_info.world_ids.)).delete()
+                    session.query(model.Chunk).filter(model.Chunk.world_id.in_(game_info.world_ids)).delete()
+                    session.query(model.World).filter(model.World.id.in_(model.GameInfo.world_ids)).delete()
                     session.delete(session.query(model.GameInfo).filter(game_id == game_id).first())
                     session.commit()
                     self.app.exchanger.answer(msg=Message(type=MessageType.RESULT,

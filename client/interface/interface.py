@@ -39,15 +39,15 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
 
     def delete_world(self):
         data = self.world_selection.currentData()
-        self.app.state.execute("delete_world", {"id": data, "owner": self.app.exchanger.user.user_id})
+        self.app.state.delete_game(**{"id": data, "owner": self.app.exchanger.user.user_id})
         self.load_worlds()
 
     def create_world(self):
-        self.app.state.execute("create_world",
-                               {"name": self.world_name.text(),
-                                "private": self.world_private.isChecked(),
-                                "owner": self.app.exchanger.user.user_id,
-                                "size": self.switch_size.currentData()})
+        self.app.state.create_game(
+            **{"name": self.world_name.text(),
+               "private": self.world_private.isChecked(),
+               "owner": self.app.exchanger.user.user_id,
+               "size": self.switch_size.currentData()})
         self.show_frame("idle_frame", self.load_worlds)
 
     def new_world_setting(self):
@@ -75,8 +75,8 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
 
     def load_worlds(self):
         self.world_selection.clear()
-        for game in self.app.state.execute("get_world").games:
-            self.world_selection.addItem(game.game_name, game.game_id)
+        for game in self.app.state.get_games():
+            self.world_selection.addItem(game.name, game.id)
 
 
 def create_interface(app):
