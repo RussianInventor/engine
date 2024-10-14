@@ -7,12 +7,17 @@ from dataclasses import dataclass
 
 class MessageType(Enum):
     CONNECT = "connect"
+
     GET_GAMES = "get_world"
     GET_GAMES_RESPONSE = "get_games_response"
+
     RUN_GAME = "run_game"
+    RUN_GAME_RESPONSE = "run_game_response"
+
     CREATE_GAME = "create_world"
-    WORLD_LIST = "world_list"
     DELETE_GAME = "delete_world"
+
+
     WORLD_UPDATE = "world_update"
     CLIENT_READY = "client_ready"
     RESULT = 'result'
@@ -23,6 +28,31 @@ class GameInfo(BaseModel):
     name: str
     owner: str
     private: bool
+
+
+class World(BaseModel):
+    id: str
+    type: str
+    name: str
+    size: int
+
+
+class Chunk(BaseModel):
+    id: str
+    world_id: str
+    x: int
+    y: int
+    biome: str
+
+
+class Object(BaseModel):
+    id: str
+    world_id: str
+    data: str
+    cls: str
+
+
+########################################################################################################################
 
 
 class ResultResponse(BaseModel):
@@ -45,6 +75,7 @@ class GetGamesResponse(BaseModel):
 ########################################################################################################################
 class CreateGameRequest(BaseModel):
     game: GameInfo
+    world_size: int
 
 
 class CreateGameResponse(BaseModel):
@@ -53,13 +84,13 @@ class CreateGameResponse(BaseModel):
 
 ########################################################################################################################
 class RunGameRequest(BaseModel):
-    world_id: str
+    game_id: str
 
 
 class RunGameResponse(BaseModel):
-    world: dict
-    chunks: list
-    objects: list
+    world: World
+    chunks: List[Chunk]
+    objects: List[Object]
 
 
 ########################################################################################################################
@@ -79,7 +110,6 @@ class Message(BaseModel):
     time: float = Field(default_factory=time.time)
     author: str
     receiver: str
-
     content: (None | ResultResponse | ConnectRequest | GetGamesResponse |
               CreateGameRequest | CreateGameResponse |
               RunGameRequest | RunGameResponse |

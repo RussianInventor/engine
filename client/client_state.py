@@ -70,27 +70,30 @@ class IdleState(State):
                                                owner=owner,
                                                id=None,
                                                private=private,
-                                               name=name,
-                                               size=size)))
+                                               name=name),
+                                           world_size=size)
+                                       )
         answer = self.exchanger.send_message(new_message)
 
 
 class GamingState(State):
-    def __init__(self, app, world_id):
+    def __init__(self, app, game_id):
         super().__init__(app)
-        new_message = messages.Message(connection=self.exchanger.connection,
-                                       title=messages.MessageType.RUN_GAME,
-                                       time=time.time(),
-                                       content={"world_id": world_id},
-                                       author=self.app.user.user_id,
-                                       receiver="server.py")
-        answer = self.exchanger.send_message(new_message)
-        World = namedtuple('World', answer.content['world'])
-        Chunk = namedtuple('Chunk', answer.content['chunks'][0])
+        new_message = messages.Message(
+            type=messages.MessageType.RUN_GAME,
+            content=messages.RunGameRequest(game_id=game_id),
+            author=self.app.user.user_id,
+            receiver="server")
 
-        world = common.world.World.load(world_obj=World(**answer.content['world']),
-                                        chunks_objs=[Chunk(**c) for c in answer.content['chunks']],
-                                        object_objs=[Object(**o) for o in answer.content['objects']])
+        answer: messages.Message = self.exchanger.send_message(message=new_message,
+                                                               connection=self.exchanger.connection)
+
+        World = namedtuple('World', answer.content.world.model_dump().keys())
+        Chunk = namedtuple('Chunk', answer.content.chunks[0].model_dump().keys())
+
+        world = common.world.World.load(world_obj=World(**answer.content.world.model_dump()),
+                                        chunks_objs=[Chunk(**c.model_dump()) for c in answer.content.chunks],
+                                        object_objs=[Object(**o.model_dump()) for o in answer.content.objects])
         self.app.game = Game(app=self.app,
                              players=[],
                              world=world)
@@ -98,13 +101,12 @@ class GamingState(State):
         self.draw_world = graphic.DrawWorld(self.app)
         self.graphic_thread = threading.Thread(target=self.draw_world.update)
         self.graphic_thread.start()
-        new_message = messages.Message(connection=self.exchanger.connection,
-                                       title=messages.MessageType.CLIENT_READY,
-                                       time=time.time(),
-                                       content={},
+        new_message = messages.Message(type=messages.MessageType.CLIENT_READY,
                                        author=self.app.user.user_id,
                                        receiver="server")
-        self.exchanger.send_message(new_message, answer_wait=False)
+        self.exchanger.send_message(message=new_message,
+                                    connection=self.exchanger.connection,
+                                    answer_wait=False)
 
         self.app.run_game()
 

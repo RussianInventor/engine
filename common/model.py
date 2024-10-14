@@ -99,6 +99,8 @@ class GameInfo(Base, Item):
     private = Column(BOOLEAN)
     owner = Column(TEXT)
 
+    current_world_index = 0
+
     def __init__(self, game_id, game_name, world_ids, players, private, owner):
         super().__init__()
         for key, val in locals().items():

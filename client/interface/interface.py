@@ -31,11 +31,11 @@ class InterApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.show_frame('connection_frame')
 
     def start_game(self):
-        world_id = self.world_selection.currentData()
-        if world_id is None:
+        game_id = self.world_selection.currentData()
+        if game_id is None:
             QtWidgets.QMessageBox(self, text="Выберите мир").show()
             return
-        self.app.set_state(GamingState, world_id=world_id)
+        self.app.set_state(GamingState, game_id=game_id)
 
     def delete_world(self):
         data = self.world_selection.currentData()

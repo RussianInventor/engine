@@ -1,15 +1,13 @@
 import logging
-import threading
 import traceback
 from abc import ABC, abstractmethod
 
-from client.client_state import GamingState
-from common.exchange import messages, Message
+from common.exchange import messages
 from common import model, world as world_base
 from sqlalchemy import or_
 import uuid
 
-from common.exchange.messages import MessageType, GetGamesResponse, ResultResponse, GameInfo
+from common.exchange.messages import MessageType, GetGamesResponse, ResultResponse, GameInfo, RunGameResponse
 from server.server import ServerApp
 from server.data_base import new_session
 from server.game import Game
@@ -30,19 +28,27 @@ class IdleState(State):
         logging.info(f'handle message: {msg.type}: {msg.content}')
         if msg.type == messages.MessageType.RUN_GAME:
             with new_session() as session:
-                q = session.query(model.World)
-                q = q.filter(model.World.id == msg.content["world_id"])
-                world = q.first()
-                content = {"world": world.get_dict(), "chunks": [], "objects": []}
-                q = session.query(model.Chunk)
-                q = q.filter(model.Chunk.world_id == msg.content["world_id"])
-                q = q.order_by(model.Chunk.y, model.Chunk.x)
-                content["chunks"] = [i.get_dict() for i in q.all()]
-                q = session.query(model.Object)
-                q = q.filter(model.Object.world_id == msg.content["world_id"])
-                content["objects"] = [i.get_dict() for i in q.all()]
-                msg.answer(content=content)
-            self.app.set_state(GamingState, world_id=msg.content["world_id"], starter_id=msg.author)
+                game_info = session.query(model.GameInfo).filter(model.GameInfo.game_id == msg.content.game_id).first()
+
+                world = session.query(model.World) \
+                    .filter(model.World.id == game_info.world_ids[game_info.current_world_index]) \
+                    .first()
+                chunks = session.query(model.Chunk) \
+                    .filter(model.Chunk.world_id == world.id) \
+                    .order_by(model.Chunk.y, model.Chunk.x)
+
+                objects = session.query(model.Object).filter(model.Object.world_id == msg.content.game_id)
+
+                new_msg = messages.Message(type=MessageType.RUN_GAME_RESPONSE,
+                                           author='server',
+                                           receiver=msg.author,
+                                           content=RunGameResponse(
+                                               world=messages.World(**world.get_dict()),
+                                               chunks=[messages.Chunk(**c.get_dict()) for c in chunks.all()],
+                                               objects=[messages.Object(**ob.get_dict()) for ob in objects.all()]
+                                           ))
+                self.app.exchanger.answer(msg=new_msg)
+            self.app.set_state(GamingState, world_id=msg.content.game_id, starter_id=msg.author)
 
         if msg.type == messages.MessageType.GET_GAMES:
             with new_session() as session:
@@ -51,7 +57,7 @@ class IdleState(State):
                                  model.GameInfo.owner == msg.author))
                 games = q.all()
             self.app.exchanger.answer(
-                msg=Message(
+                msg=messages.Message(
                     type=MessageType.GET_GAMES_RESPONSE,
                     author='server',
                     receiver=msg.author,
@@ -78,7 +84,7 @@ class IdleState(State):
             new_world = model.World(id=world_id,
                                     type='ground',
                                     name='ground world',
-                                    size=msg.content.game.size)
+                                    size=msg.content.world_size)
 
             with new_session(expire_on_commit=False) as session:
                 session.add(new_game)
@@ -91,19 +97,19 @@ class IdleState(State):
                 try:
                     session.commit()
                 except Exception as err:
-                    self.app.exchanger.answer(msg=Message(type=MessageType.RESULT,
-                                                          author="server",
-                                                          receiver=msg.author,
-                                                          content=ResultResponse(result='fail',
-                                                                                 error=str(err),
-                                                                                 details=traceback.format_exc())))
+                    self.app.exchanger.answer(msg=messages.Message(type=MessageType.RESULT,
+                                                                   author="server",
+                                                                   receiver=msg.author,
+                                                                   content=ResultResponse(result='fail',
+                                                                                          error=str(err),
+                                                                                          details=traceback.format_exc())))
                     logging.error(str(err))
                     logging.error(traceback.format_exc())
                 else:
-                    self.app.exchanger.answer(msg=Message(type=MessageType.RESULT,
-                                                          author="server",
-                                                          receiver=msg.author,
-                                                          content=ResultResponse(result='success')))
+                    self.app.exchanger.answer(msg=messages.Message(type=MessageType.RESULT,
+                                                                   author="server",
+                                                                   receiver=msg.author,
+                                                                   content=ResultResponse(result='success')))
                     # msg.answer(content={c.name: new_world.__getattribute__(c.name) for c in new_world.__table__.c})
                 procedure_generation(new_world)
         if msg.type == messages.MessageType.DELETE_GAME:
@@ -113,22 +119,22 @@ class IdleState(State):
                 try:
                     game_info = session.query(model.GameInfo).filter(model.GameInfo.game_id == game_id).first()
 
-                    session.query(model.Object).filter(model.Object.world_id.in_(game_info.world_ids.)).delete()
+                    session.query(model.Object).filter(model.Object.world_id.in_(game_info.world_ids)).delete()
                     session.query(model.Chunk).filter(model.Chunk.world_id.in_(game_info.world_ids)).delete()
-                    session.query(model.World).filter(model.World.id.in_(model.GameInfo.world_ids)).delete()
+                    session.query(model.World).filter(model.World.id.in_(game_info.world_ids)).delete()
                     session.delete(session.query(model.GameInfo).filter(game_id == game_id).first())
                     session.commit()
-                    self.app.exchanger.answer(msg=Message(type=MessageType.RESULT,
-                                                          author="server",
-                                                          receiver=msg.author,
-                                                          content=ResultResponse(result='success')))
+                    self.app.exchanger.answer(msg=messages.Message(type=MessageType.RESULT,
+                                                                   author="server",
+                                                                   receiver=msg.author,
+                                                                   content=ResultResponse(result='success')))
                 except Exception as err:
-                    self.app.exchanger.answer(msg=Message(type=MessageType.RESULT,
-                                                          author="server",
-                                                          receiver=msg.author,
-                                                          content=ResultResponse(result='fail',
-                                                                                 error=str(err),
-                                                                                 details=traceback.format_exc())))
+                    self.app.exchanger.answer(msg=messages.Message(type=MessageType.RESULT,
+                                                                   author="server",
+                                                                   receiver=msg.author,
+                                                                   content=ResultResponse(result='fail',
+                                                                                          error=str(err),
+                                                                                          details=traceback.format_exc())))
 
 
 class GamingState(State):
