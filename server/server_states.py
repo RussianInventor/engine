@@ -37,7 +37,7 @@ class IdleState(State):
                     .filter(model.Chunk.world_id == world.id) \
                     .order_by(model.Chunk.y, model.Chunk.x)
 
-                objects = session.query(model.Object).filter(model.Object.world_id == msg.content.game_id)
+                objects = session.query(model.Object).filter(model.Object.world_id == world.id)
 
                 new_msg = messages.Message(type=MessageType.RUN_GAME_RESPONSE,
                                            author='server',
@@ -48,7 +48,7 @@ class IdleState(State):
                                                objects=[messages.Object(**ob.get_dict()) for ob in objects.all()]
                                            ))
                 self.app.exchanger.answer(msg=new_msg)
-            self.app.set_state(GamingState, world_id=msg.content.game_id, starter_id=msg.author)
+            self.app.set_state(GamingState, game_info=game_info, starter_id=msg.author)
 
         if msg.type == messages.MessageType.GET_GAMES:
             with new_session() as session:
@@ -138,10 +138,10 @@ class IdleState(State):
 
 
 class GamingState(State):
-    def __init__(self, app, world_id, starter_id):
+    def __init__(self, app, game_info, starter_id):
         super().__init__(app=app)
         with new_session() as session:
-            world = world_base.World.from_db(session, world_id)
+            world = world_base.World.from_db(session, world_id=game_info.world_ids[game_info.current_world_index])
         self.app.game = Game(self.app, [starter_id], world)
         self.app.game.load_a_non_i()
         self.app.run_game()

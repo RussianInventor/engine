@@ -18,7 +18,7 @@ class Game:
     def process_updates(self):
         while not self.update_queue.empty():
             msg = self.update_queue.get()
-            for obj in msg.content["objects"]:
+            for obj in msg.content.objects:
                 y = int(obj.pop("old_y") // GameConfig.CHUNK_SIZE)
                 x = int(obj.pop("old_x") // GameConfig.CHUNK_SIZE)
                 obj_id = obj.pop("id")

@@ -156,7 +156,7 @@ def procedure_generation(world: model.World):
     with new_session() as session:
         for gen in obj_gen(session):
             for row in game_world.chunks:
-                for chunk in filter(lambda c: c.biome == gen.biome, row):
+                for chunk in filter(lambda c: c.biome == model.Biome(gen.biome), row):
                     if random.randint(0, 100) <= gen.percent_chunks:
                         for i in range(random.randint(gen.min_num_in_chunk, gen.max_num_in_chunk)):
                             kwargs = json.loads(gen.init_data)
