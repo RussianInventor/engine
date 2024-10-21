@@ -31,11 +31,23 @@ class Chunk(Storable):
         self.id = id
         self.x = x
         self.y = y
+        self._biome = None
         self.biome = biome
 
     @property
     def img_key(self):
         return self.images.get(DEFAULT)
+
+    @property
+    def biome(self):
+        return self._biome
+
+    @biome.setter
+    def biome(self, val):
+        if isinstance(val, model.Biome):
+            self._biome = val
+        else:
+            self._biome = model.Biome(val)
 
     def add_img_key(self, new_img, key: str = DEFAULT):
         if key not in self.images.keys():
@@ -128,7 +140,7 @@ class World(Storable):
                                 world_id=self.id,
                                 x=chunk.x,
                                 y=chunk.y,
-                                biome=chunk.biome)
+                                biome=chunk.biome.value)
                 chunks_to_update.append(c)
         upsert(session, chunks_to_update)
         # chunks = session.query(model.Chunk).filter(model.Chunk.world_id == self.id).all()

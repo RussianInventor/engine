@@ -84,7 +84,7 @@ def expansion(chunks, biome, x, y, num):
         new_y = y + move
         if new_y < 0 or new_y >= len(chunks):
             new_y = y
-    chunks[new_y][new_x].biome = biome.value
+    chunks[new_y][new_x].biome = biome
     expansion(chunks, biome, new_x, new_y, num)
 
 
@@ -115,17 +115,17 @@ def procedure_generation(world: model.World):
             water_size = get_biome_size("water", static_water_num)
             x = random.randint(1, world.size - 2)
             y = random.randint(1, world.size - 2)
-            filter(lambda c: c.x == x and c.y == y, chunks).__next__().biome = model.Biome.WATER.value
+            filter(lambda c: c.x == x and c.y == y, chunks).__next__().biome = model.Biome.WATER
             water_num -= water_size
             water_size -= 1
             expansion(chunks=game_world.chunks, biome=model.Biome.WATER, x=x, y=y, num=water_size)
         while desert_num > 1:
-            desert_num -= stain(chunks=game_world.chunks, biome="desert",
+            desert_num -= stain(chunks=game_world.chunks, biome=model.Biome.DESERT,
                                 x=random.randint(0, world.size * Config.CHUNK_SIZE),
                                 y=random.randint(0, world.size * Config.CHUNK_SIZE),
                                 radius=math.sqrt(get_biome_size("desert", static_desert_num) / math.pi))
         while mountains_num > 1:
-            mountains_num -= stain(chunks=game_world.chunks, biome="mountains",
+            mountains_num -= stain(chunks=game_world.chunks, biome=model.Biome.MOUNTAINS,
                                    x=random.randint(0, world.size * Config.CHUNK_SIZE),
                                    y=random.randint(0, world.size * Config.CHUNK_SIZE),
                                    radius=math.sqrt(get_biome_size("mountains", static_mountains_num) / math.pi))
@@ -134,7 +134,7 @@ def procedure_generation(world: model.World):
         session.commit()
     with new_session() as session:
         for row in game_world.chunks:
-            for chu in filter(lambda cu: cu.biome == model.Biome.WATER.value, row):
+            for chu in filter(lambda cu: cu.biome == model.Biome.WATER, row):
                 x = chu.x
                 y = chu.y
                 for n_x in range(-1, 2):
@@ -142,15 +142,15 @@ def procedure_generation(world: model.World):
                         for n_y in range(-1, 2):
                             if y + n_y != world.size and y + n_y != 0:
                                 chuk = game_world.chunks[y + n_y][x + n_x]
-                                if chuk.biome == model.Biome.FIELD.value or chuk.biome == model.Biome.DESERT.value:
-                                    chuk.biome = model.Biome.BEACH.value
+                                if chuk.biome == model.Biome.FIELD or chuk.biome == model.Biome.DESERT:
+                                    chuk.biome = model.Biome.BEACH
         for row in game_world.chunks:
             for chu in filter(lambda c: any([c.x == 0,
                                              c.x == world.size - 1,
                                              c.y == 0,
                                              c.y == world.size - 1]),
                               row):
-                chu.biome = model.Biome.MEGA_MOUNTAINS.value
+                chu.biome = model.Biome.MEGA_MOUNTAINS
         game_world.save(session)
         session.commit()
     with new_session() as session:
