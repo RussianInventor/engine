@@ -115,7 +115,7 @@ def procedure_generation(world: model.World):
             water_size = get_biome_size("water", static_water_num)
             x = random.randint(1, world.size - 2)
             y = random.randint(1, world.size - 2)
-            filter(lambda c: c.x == x and c.y == y, chunks).__next__().biome = model.Biome.WATER
+            game_world.chunks[y][x].biome = model.Biome.WATER
             water_num -= water_size
             water_size -= 1
             expansion(chunks=game_world.chunks, biome=model.Biome.WATER, x=x, y=y, num=water_size)

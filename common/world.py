@@ -140,9 +140,10 @@ class World(Storable):
                                 world_id=self.id,
                                 x=chunk.x,
                                 y=chunk.y,
-                                biome=chunk.biome.value)
+                                biome=chunk.biome)
                 chunks_to_update.append(c)
-        upsert(session, chunks_to_update)
+        upsert(session=session, objects=chunks_to_update)
+        session.flush()
         # chunks = session.query(model.Chunk).filter(model.Chunk.world_id == self.id).all()
 
         session.query(model.Object).filter(model.Object.world_id == self.id).delete()
