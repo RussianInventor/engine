@@ -11,15 +11,6 @@ from .exchange import exchanger
 warnings.warn('старье', DeprecationWarning)
 
 
-class Player:
-    def __init__(self, id, connection):
-        self.id = id
-        self.connection = connection
-
-    def send_command(self, command):
-        pass
-
-
 class Object:
     def __init__(self, x, y, w, h):
         self.x = x

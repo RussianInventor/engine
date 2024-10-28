@@ -176,22 +176,22 @@ class DrawWorld:
                     if event.key == pygame.K_F3:
                         DEBUG = not DEBUG
                     if event.key == pygame.K_s:
-                        self.camera.down()
+                        self.app.game.player.down()
                     if event.key == pygame.K_w:
-                        self.camera.up()
+                        self.app.game.player.up()
                     if event.key == pygame.K_d:
-                        self.camera.right()
+                        self.app.game.player.right()
                     if event.key == pygame.K_a:
-                        self.camera.left()
+                        self.app.game.player.left()
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_s:
-                        self.camera.v_y = 0
+                        self.app.game.player.v_y = 0
                     if event.key == pygame.K_w:
-                        self.camera.v_y = 0
+                        self.app.game.player.v_y = 0
                     if event.key == pygame.K_d:
-                        self.camera.v_x = 0
+                        self.app.game.player.v_x = 0
                     if event.key == pygame.K_a:
-                        self.camera.v_x = 0
+                        self.app.game.player.v_x = 0
             if not self.sprites.exists(scale=self.camera.scale):
                 self.load_img_objects(self.app.game.world._objects.values())
                 for row in self.app.game.world.chunks:

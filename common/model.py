@@ -105,3 +105,15 @@ class GameInfo(Base, Item):
         super().__init__()
         for key, val in locals().items():
             self.__setattr__(key, val)
+
+
+class Player(Base, Item):
+    __tablename__ = "players"
+    id = Column(TEXT, primary_key=True)
+    game_id = Column(TEXT)
+    obj_id = Column(TEXT)
+
+    def __init__(self, id, game_id, obj_id):
+        super().__init__()
+        for key, val in locals().items():
+            self.__setattr__(key, val)

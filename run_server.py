@@ -1,6 +1,5 @@
 import logging
 import argparse
-from common.game import Player
 from server.server import ServerApp
 from server.config import Config
 import threading

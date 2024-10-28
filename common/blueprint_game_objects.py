@@ -83,8 +83,8 @@ class Creature(ObjectBlueprint):
     def __init__(self, x, y, hp, max_hp, v, vision, **kwargs):
         super().__init__(x=x, y=y, **kwargs)
         self.v = v
-        self.vx = 0
-        self.vy = 0
+        self.v_x = 0
+        self.v_y = 0
         self._hp = hp
         self._max_hp = max_hp
         self.vision = vision
@@ -104,19 +104,19 @@ class Creature(ObjectBlueprint):
         d = math.sqrt(dx**2 + dy**2)
         cos = dx/d
         sin = dy/d
-        self.vx = cos*self.v
-        self.vy = sin*self.v
+        self.v_x = cos * self.v
+        self.v_y = sin * self.v
 
     def move(self, x, y):
-        if abs(x - self.x) > abs(self.vx) and abs(y - self.y) > abs(self.vy):
-            self.x += self.vx
-            self.y += self.vy
+        if abs(x - self.x) > abs(self.v_x) and abs(y - self.y) > abs(self.v_y):
+            self.x += self.v_x
+            self.y += self.v_y
             return False
         else:
             self.x = x
             self.y = y
-            self.vx = 0
-            self.vy = 0
+            self.v_x = 0
+            self.v_y = 0
             return True
 
 

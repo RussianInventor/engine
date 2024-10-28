@@ -2,16 +2,18 @@ from queue import Queue
 from client import config
 from common.config import Config as GameConfig
 from common.world import World
+from .player import Player
 
 
 class Game:
     EVENTS_UPDATE_LIMIT = 100
 
-    def __init__(self, app, players, world: World):
+    def __init__(self, app, players, world: World, player):
         self.app = app
         self.world = world
         self.players = players
         self.keyboard = config.Keyboard()
+        self.player = Player(self.world.get_object(obj_id=player.obj_id), self.world)
 
         self.update_queue = Queue()
 
