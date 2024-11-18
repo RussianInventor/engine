@@ -1,12 +1,13 @@
 import math
-
+from common.exchange import messages
 from common import blueprint_game_objects
 
 
 class Player:
-    def __init__(self, obj: blueprint_game_objects.Creature, world):
+    def __init__(self, obj: blueprint_game_objects.Creature, world, app):
         self.world = world
         self.obj = obj
+        self.app = app
 
     @property
     def x(self):
@@ -37,21 +38,37 @@ class Player:
         return 1
 
     def down(self):
-        self.v_y = self.step
+        self.app.exchanger.send_message(messages.Message(type=messages.MessageType.CLIENT_UPDATE,
+                                                         autor=self.app.exchanger.user.user_id,
+                                                         receiver="server",
+                                                         content=messages.ClientUpdate(command=messages.Command.down)))
 
     def up(self):
-        self.v_y = -self.step
+        self.app.exchanger.send_message(messages.Message(type=messages.MessageType.CLIENT_UPDATE,
+                                                         autor=self.app.exchanger.user.user_id,
+                                                         receiver="server",
+                                                         content=messages.ClientUpdate(command=messages.Command.up)))
 
     def right(self):
-        self.v_x = self.step
+        self.app.exchanger.send_message(messages.Message(type=messages.MessageType.CLIENT_UPDATE,
+                                                         autor=self.app.exchanger.user.user_id,
+                                                         receiver="server",
+                                                         content=messages.ClientUpdate(command=messages.Command.right)))
 
     def left(self):
-        self.v_x = -self.step
+        self.app.exchanger.send_message(messages.Message(type=messages.MessageType.CLIENT_UPDATE,
+                                                         autor=self.app.exchanger.user.user_id,
+                                                         receiver="server",
+                                                         content=messages.ClientUpdate(command=messages.Command.left)))
 
-    def move(self):
-        if self.v_y != 0 and self.v_x != 0:
-            self.obj.x += self.obj.v / math.sqrt(2) * self.v_x
-            self.obj.y += self.obj.v / math.sqrt(2) * self.v_y
-        else:
-            self.obj.x += self.obj.v * self.v_x
-            self.obj.y += self.obj.v * self.v_y
+    def stop_x(self):
+        self.app.exchanger.send_message(messages.Message(type=messages.MessageType.CLIENT_UPDATE,
+                                                         autor=self.app.exchanger.user.user_id,
+                                                         receiver="server",
+                                                         content=messages.ClientUpdate(command=messages.Command.stop_x)))
+
+    def stop_y(self):
+        self.app.exchanger.send_message(messages.Message(type=messages.MessageType.CLIENT_UPDATE,
+                                                         autor=self.app.exchanger.user.user_id,
+                                                         receiver="server",
+                                                         content=messages.ClientUpdate(command=messages.Command.stop_y)))

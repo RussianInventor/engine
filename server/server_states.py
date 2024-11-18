@@ -142,10 +142,14 @@ class GamingState(State):
         super().__init__(app=app)
         with new_session() as session:
             world = world_base.World.from_db(session, world_id=game_info.world_ids[game_info.current_world_index])
-        self.app.game = Game(self.app, [starter_id], world)
+        self.app.game = Game(app=self.app, world=world, game_id=game_info.game_id)
         self.app.game.load_a_non_i()
         self.app.run_game()
 
     def handle_message(self, msg: messages.Message):
         if msg.type == messages.MessageType.CLIENT_READY:
             self.app.clients[msg.author] = 1
+        if msg.type == messages.MessageType.CLIENT_UPDATE:
+            for com in msg.content.commands:
+                self.app.game.players[msg.author].__getattr__(com)
+

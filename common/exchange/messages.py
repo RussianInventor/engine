@@ -17,8 +17,9 @@ class MessageType(Enum):
     CREATE_GAME = "create_world"
     DELETE_GAME = "delete_world"
 
-
     WORLD_UPDATE = "world_update"
+    CLIENT_UPDATE = "client_update"
+
     CLIENT_READY = "client_ready"
     RESULT = 'result'
 
@@ -50,6 +51,15 @@ class Object(BaseModel):
     world_id: str
     data: str
     cls: str
+
+
+class Command(Enum):
+    left = "left"
+    down = "down"
+    right = "right"
+    up = "up"
+    stop_x = "stop_x"
+    stop_y = "stop_y"
 
 
 ########################################################################################################################
@@ -105,6 +115,11 @@ class WorldUpdate(BaseModel):
 
 
 ########################################################################################################################
+class ClientUpdate(BaseModel):
+    commands: List[Command]
+
+
+########################################################################################################################
 class Message(BaseModel):
     type: MessageType
     time: float = Field(default_factory=time.time)
@@ -113,4 +128,5 @@ class Message(BaseModel):
     content: (None | ResultResponse | ConnectRequest | GetGamesResponse |
               CreateGameRequest | CreateGameResponse |
               RunGameRequest | RunGameResponse |
-              DeleteGameRequest | WorldUpdate) = None
+              DeleteGameRequest | WorldUpdate | ClientUpdate) = None
+
