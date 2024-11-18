@@ -112,6 +112,7 @@ class DeleteGameRequest(BaseModel):
 class WorldUpdate(BaseModel):
     chunks: list
     objects: list
+    new_objects: list
 
 
 ########################################################################################################################

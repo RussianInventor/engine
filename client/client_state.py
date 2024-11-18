@@ -11,8 +11,8 @@ from common.exchange import messages
 from client import graphic
 from client.game import Game
 
-from common.config import Config as ComConfig
-from queue import Queue
+from .player import Player
+from common.invisible_washing_machine import InvisibleWashingMachine
 
 
 class State(ABC):
@@ -38,15 +38,6 @@ class InitState(State):
 
 
 class IdleState(State):
-    # def run_game(self, world_id):
-    #     new_message = messages.Message(connection=self.exchanger.connection,
-    #                                    title=messages.MessageType.RUN_GAME,
-    #                                    time=time.time(),
-    #                                    content={"world_id": world_id},
-    #                                    author=self.exchanger.user.user_id,
-    #                                    receiver="server.py")
-    #     self.exchanger.send_message(new_message)
-
     def get_games(self):
         new_message = messages.Message(type=messages.MessageType.GET_GAMES,
                                        author=self.exchanger.user.user_id,
@@ -96,7 +87,8 @@ class GamingState(State):
                                         object_objs=[Object(**o.model_dump()) for o in answer.content.objects])
         self.app.game = Game(app=self.app,
                              players=[],
-                             world=world)
+                             world=world,
+                             player=Player(InvisibleWashingMachine(), world, app))
 
         self.draw_world = graphic.DrawWorld(self.app)
         self.graphic_thread = threading.Thread(target=self.draw_world.update)

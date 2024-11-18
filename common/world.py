@@ -114,6 +114,10 @@ class World(Storable):
                 self.chunks[y][x].object_ids.remove(obj.id)
         self.chunks[y][x].add_object(obj)
 
+    @property
+    def size(self):
+        return len(self.chunks[0]) * Config.CHUNK_SIZE, len(self.chunks) * Config.CHUNK_SIZE
+
     @classmethod
     def load(cls, world_obj, chunks_objs, object_objs):
         new_world = cls(world_obj.type, id=world_obj.id)

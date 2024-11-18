@@ -13,7 +13,7 @@ class Game:
         self.world = world
         self.players = players
         self.keyboard = config.Keyboard()
-        self.player = Player(self.world.get_object(obj_id=player.obj_id), self.world)
+        self.player = Player(obj=self.world.get_object(obj_id=player.obj_id), world=self.world, app=self.app)
 
         self.update_queue = Queue()
 

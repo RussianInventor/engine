@@ -149,6 +149,7 @@ class GamingState(State):
     def handle_message(self, msg: messages.Message):
         if msg.type == messages.MessageType.CLIENT_READY:
             self.app.clients[msg.author] = 1
+            self.app.game.add_player(msg.author)
         if msg.type == messages.MessageType.CLIENT_UPDATE:
             for com in msg.content.commands:
                 self.app.game.players[msg.author].__getattr__(com)

@@ -154,9 +154,10 @@ class Server(Exchanger):
             print('fail')
             pass
 
-    def broadcast(self, chunks, objects):
+    def broadcast(self, chunks, objects, new_objects):
         content = WorldUpdate(chunks=chunks,
-                              objects=[obj for obj in objects if obj is not None])
+                              objects=[obj for obj in objects if obj is not None],
+                              new_objects=new_objects)
         for player_id, player_status in self.app.clients.items():
             if player_status == 1:
                 new_message = Message(type=MessageType.WORLD_UPDATE,
