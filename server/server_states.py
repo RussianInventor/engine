@@ -7,7 +7,8 @@ from common import model, world as world_base
 from sqlalchemy import or_
 import uuid
 
-from common.exchange.messages import MessageType, GetGamesResponse, ResultResponse, GameInfo, RunGameResponse
+from common.exchange.messages import MessageType, GetGamesResponse, ResultResponse, GameInfo, RunGameResponse, \
+    AddPlayerResponse
 from server.server import ServerApp
 from server.data_base import new_session
 from server.game import Game
@@ -154,3 +155,10 @@ class GamingState(State):
             for com in msg.content.commands:
                 self.app.game.players[msg.author].__getattr__(com)
 
+        if msg.type == messages.MessageType.ADD_PLAYER_REQUEST:
+            player_obj = self.app.game.add_player(id=msg.author)
+            self.app.exchanger.answer(msg=messages.Message(type=MessageType.RESULT,
+                                                           author="server",
+                                                           receiver=msg.author,
+                                                           content=AddPlayerResponse(obj_id=player_obj.id,
+                                                                                     obj_data=player_obj.get_dict())))

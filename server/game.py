@@ -1,6 +1,8 @@
 import queue
 import random
 import time
+
+from common.exchange.messages import Object
 from .data_base import new_session
 from common import model
 from sqlalchemy import and_
@@ -20,20 +22,23 @@ class Game:
         self.players = {}
         self.events = queue.Queue()
         self.game_id = game_id
-        self.new_objects = []
 
     def add_player(self, id):
         with new_session() as session:
-            player = session.query(model.Player).filter(and_(model.Player.id == id,
+            db_player = session.query(model.Player).filter(and_(model.Player.id == id,
                                                              model.Player.game_id == self.game_id)).first()
-            if player is None:
-                human = Human(random.randint(0, self.world.size[0]),
-                              random.randint(0, self.world.size[1]))
-                self.new_objects.append(human)
-                self.world.add_object(human)
-                player = model.Player(id=id, game_id=self.game_id, obj_id=human.id)
-                session.add(player)
-            self.players[id] = player
+            if db_player is None:
+                human = Human(x=random.randint(0, self.world.size[0]),
+                              y=random.randint(0, self.world.size[1]))
+                player_obj = self.world.create_objects([human], sync=True)[0]
+
+                db_player = model.Player(id=id, game_id=self.game_id, obj_id=human.id)
+                session.add(db_player)
+            else:
+                player_obj = session.query(model.Object).filter(model.Object.id == db_player.obj_id).first()
+
+            self.players[id] = db_player
+        return player_obj
 
     def load_a_non_i(self):
         for obj in self.world.objects(base_cls=Creature):
@@ -44,13 +49,15 @@ class Game:
     def update(self):
         while True:
             start_time = time.time()
+
             updates = []
             for creature in self.world.objects(base_cls=Creature):
-                updates.append(creature.brain.update())
-            new_objects = []
-            for _ in range(len(self.new_objects)):
-                new_objects.append(new_objects.pop(0))
-            self.app.exchanger.broadcast(chunks=[], objects=updates, new_objects=new_objects)
+                if creature.brain is not None:
+                    updates.append(creature.brain.update())
+
+            self.app.exchanger.broadcast(chunks=[],
+                                         objects=updates,
+                                         new_objects=self.world.new_objects_updates)
             try:
                 time.sleep(0.1 / len(self.players))
             except ZeroDivisionError:

@@ -23,6 +23,9 @@ class MessageType(Enum):
     CLIENT_READY = "client_ready"
     RESULT = 'result'
 
+    ADD_PLAYER_REQUEST = 'add_player_request'
+    ADD_PLAYER_RESPONSE = 'add_player_response'
+
 
 class GameInfo(BaseModel):
     id: str | None
@@ -121,6 +124,16 @@ class ClientUpdate(BaseModel):
 
 
 ########################################################################################################################
+class AddPlayerRequest(BaseModel):
+    pass
+
+
+class AddPlayerResponse(BaseModel):
+    obj_id: str
+    obj_data: dict
+
+
+########################################################################################################################
 class Message(BaseModel):
     type: MessageType
     time: float = Field(default_factory=time.time)
@@ -129,5 +142,6 @@ class Message(BaseModel):
     content: (None | ResultResponse | ConnectRequest | GetGamesResponse |
               CreateGameRequest | CreateGameResponse |
               RunGameRequest | RunGameResponse |
+              AddPlayerRequest | AddPlayerResponse |
               DeleteGameRequest | WorldUpdate | ClientUpdate) = None
 

@@ -3,17 +3,27 @@ from client import config
 from common.config import Config as GameConfig
 from common.world import World
 from .player import Player
+from common import model
 
 
 class Game:
     EVENTS_UPDATE_LIMIT = 100
 
-    def __init__(self, app, players, world: World, player):
+    def __init__(self,
+                 app,
+                 world: World,
+                 player_obj_id,
+                 player_obj_data):
         self.app = app
         self.world = world
-        self.players = players
         self.keyboard = config.Keyboard()
-        self.player = Player(obj=self.world.get_object(obj_id=player.obj_id), world=self.world, app=self.app)
+
+        self.world.load_objs(object_objs=[model.Object(**player_obj_data)],
+                             world=self.world)
+
+        self.player = Player(obj=self.world.get_object(obj_id=player_obj_id),
+                             world=self.world,
+                             app=self.app)
 
         self.update_queue = Queue()
 
@@ -28,6 +38,8 @@ class Game:
                 for atr, val in obj.items():
                     creature.__setattr__(atr, val)
                 self.world.switch_chunk(creature)
+            self.world.load_objs(object_objs=msg.content.new_objects,
+                                 world=self.world)
 
     def update(self):
         while True:

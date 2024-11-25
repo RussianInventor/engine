@@ -1,7 +1,7 @@
 import json
 
 from common import model
-from server.data_base import upsert
+from server.data_base import upsert, new_session
 from . import blueprint_game_objects, game_objects
 from common.config import Config
 
@@ -85,11 +85,35 @@ class World(Storable):
         self.day_time = None
         self.type = type
 
+        self._new_objects_updates = []
+
+    @property
+    def new_objects_updates(self):
+        updates = self._new_objects_updates.copy()
+        for u in updates:
+            self._new_objects_updates.remove(u)
+        return updates
+
     def define_chunk(self, x, y) -> Chunk:
-        return self.chunks[y//Config.CHUNK_SIZE][x//Config.CHUNK_SIZE]
+        return self.chunks[y // Config.CHUNK_SIZE][x // Config.CHUNK_SIZE]
 
     def add_object(self, obj: blueprint_game_objects.ObjectBlueprint):
         self._objects[obj.id] = obj
+
+    def create_objects(self, objs, sync=False):
+        result = []
+        with new_session() as session:
+            for obj in objs:
+                self.add_object(obj)
+                db_obj = model.Object(id=obj.id,
+                                      world_id=self.id,
+                                      data=obj.to_json(),
+                                      cls=obj.__class__.__name__)
+                result.append(db_obj)
+                session.add(db_obj)
+            if not sync:
+                self._new_objects_updates.append(db_obj.get_dict())
+        return result
 
     def pop_object(self, obj_id):
         return self._objects.pop(obj_id)
@@ -127,16 +151,26 @@ class World(Storable):
                 new_world.chunks.append([])
             new_world.chunks[-1].append(Chunk.load(chunk))
 
+        cls.load_objs(object_objs=object_objs,
+                      world=new_world)
+        return new_world
+
+    @classmethod
+    def load_objs(cls, object_objs, world):
         clses = vars(game_objects)
         for obj in object_objs:
             cur_cls = clses[obj.cls]
             g_obj = cur_cls.from_json(obj.data)
             x, y = g_obj.chunk_indexes()
-            new_world.add_object(g_obj)
-            new_world.chunks[y][x].add_object(g_obj)
-        return new_world
+            world.add_object(g_obj)
+            world.chunks[y][x].add_object(g_obj)
 
     def save(self, session):
+        self.save_chunks(session)
+        session.query(model.Object).filter(model.Object.world_id == self.id).delete()
+        self.save_objects(session, objects_to_save=self.objects())
+
+    def save_chunks(self, session):
         chunks_to_update = []
         for row in self.chunks:
             for chunk in row:
@@ -148,16 +182,13 @@ class World(Storable):
                 chunks_to_update.append(c)
         upsert(session=session, objects=chunks_to_update)
         session.flush()
-        # chunks = session.query(model.Chunk).filter(model.Chunk.world_id == self.id).all()
 
-        session.query(model.Object).filter(model.Object.world_id == self.id).delete()
-        for obj in self.objects():
+    def save_objects(self, session, objects_to_save):
+        for obj in objects_to_save:
             session.add(model.Object(id=obj.id,
                                      world_id=self.id,
                                      data=obj.to_json(),
                                      cls=obj.__class__.__name__))
-
-        # chunk.biome = game_chunk.biome
 
     @classmethod
     def from_db(cls, session, world_id):

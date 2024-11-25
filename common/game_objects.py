@@ -27,9 +27,9 @@ class Pig(blueprint_game_objects.Creature):
 
 
 class Human(blueprint_game_objects.Creature):
-    def __init__(self, x, y, _hp=100, max_hp=None, **kwargs):
+    def __init__(self, x, y, _hp=100, max_hp=None, v=2, vision=Config.CHUNK_SIZE*2, **kwargs):
         if max_hp is None:
             max_hp = _hp
-        super().__init__(x=x, y=y, hp=_hp, max_hp=max_hp, **kwargs)
+        super().__init__(x=x, y=y, hp=_hp, max_hp=max_hp, v=v, vision=vision, **kwargs)
         self.w = 16
         self.h = 16

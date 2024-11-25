@@ -18,13 +18,13 @@ class Context:
         before = self.obj.__dict__.copy()
         self.state.update()
         after = self.obj.__dict__
-        update_list = {}
+        update_dict = {}
         for atr, val in before.items():
             if val != after[atr]:
-                update_list[atr] = after[atr]
-        if update_list:
-            update_list.update({"id": self.obj.id, "old_x": self.obj.x, "old_y": self.obj.y})
-            return update_list
+                update_dict[atr] = after[atr]
+        if update_dict:
+            update_dict.update({"id": self.obj.id, "old_x": self.obj.x, "old_y": self.obj.y})
+            return update_dict
 
 
 class State(ABC):

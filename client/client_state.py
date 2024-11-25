@@ -70,6 +70,7 @@ class IdleState(State):
 class GamingState(State):
     def __init__(self, app, game_id):
         super().__init__(app)
+        # запрос на запуск на игры на сервере
         new_message = messages.Message(
             type=messages.MessageType.RUN_GAME,
             content=messages.RunGameRequest(game_id=game_id),
@@ -85,10 +86,22 @@ class GamingState(State):
         world = common.world.World.load(world_obj=World(**answer.content.world.model_dump()),
                                         chunks_objs=[Chunk(**c.model_dump()) for c in answer.content.chunks],
                                         object_objs=[Object(**o.model_dump()) for o in answer.content.objects])
+
+        # запрос на добавление игрока
+        new_message = messages.Message(
+            type=messages.MessageType.ADD_PLAYER_REQUEST,
+            content=messages.AddPlayerRequest(),
+            author=self.app.user.user_id,
+            receiver="server"
+        )
+        answer: messages.Message = self.exchanger.send_message(message=new_message,
+                                                               connection=self.exchanger.connection)
+
         self.app.game = Game(app=self.app,
-                             players=[],
                              world=world,
-                             player=Player(InvisibleWashingMachine(), world, app))
+                             player_obj_id=answer.content.obj_id,
+                             player_obj_data=answer.content.obj_data
+                             )
 
         self.draw_world = graphic.DrawWorld(self.app)
         self.graphic_thread = threading.Thread(target=self.draw_world.update)
