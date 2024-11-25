@@ -152,8 +152,7 @@ class GamingState(State):
             self.app.clients[msg.author] = 1
             self.app.game.add_player(msg.author)
         if msg.type == messages.MessageType.CLIENT_UPDATE:
-            for com in msg.content.commands:
-                self.app.game.players[msg.author].__getattr__(com)
+            self.app.game.players[msg.author].__getattr__(msg.content.command)
 
         if msg.type == messages.MessageType.ADD_PLAYER_REQUEST:
             player_obj = self.app.game.add_player(id=msg.author)
