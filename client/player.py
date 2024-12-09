@@ -39,36 +39,42 @@ class Player:
 
     def down(self):
         self.app.exchanger.send_message(messages.Message(type=messages.MessageType.CLIENT_UPDATE,
-                                                         autor=self.app.exchanger.user.user_id,
+                                                         author=self.app.exchanger.user.user_id,
                                                          receiver="server",
-                                                         content=messages.ClientUpdate(command=messages.Command.down)))
+                                                         content=messages.ClientUpdate(command=messages.Command.down)),
+                                        answer_wait=False)
 
     def up(self):
         self.app.exchanger.send_message(messages.Message(type=messages.MessageType.CLIENT_UPDATE,
-                                                         autor=self.app.exchanger.user.user_id,
+                                                         author=self.app.exchanger.user.user_id,
                                                          receiver="server",
-                                                         content=messages.ClientUpdate(command=messages.Command.up)))
+                                                         content=messages.ClientUpdate(command=messages.Command.up)),
+                                        answer_wait=False)
 
     def right(self):
         self.app.exchanger.send_message(messages.Message(type=messages.MessageType.CLIENT_UPDATE,
-                                                         autor=self.app.exchanger.user.user_id,
+                                                         author=self.app.exchanger.user.user_id,
                                                          receiver="server",
-                                                         content=messages.ClientUpdate(command=messages.Command.right)))
+                                                         content=messages.ClientUpdate(command=messages.Command.right)),
+                                        answer_wait=False)
 
     def left(self):
         self.app.exchanger.send_message(messages.Message(type=messages.MessageType.CLIENT_UPDATE,
-                                                         autor=self.app.exchanger.user.user_id,
+                                                         author=self.app.exchanger.user.user_id,
                                                          receiver="server",
-                                                         content=messages.ClientUpdate(command=messages.Command.left)))
+                                                         content=messages.ClientUpdate(command=messages.Command.left)),
+                                        answer_wait=False)
 
     def stop_x(self):
         self.app.exchanger.send_message(messages.Message(type=messages.MessageType.CLIENT_UPDATE,
-                                                         autor=self.app.exchanger.user.user_id,
+                                                         author=self.app.exchanger.user.user_id,
                                                          receiver="server",
-                                                         content=messages.ClientUpdate(command=messages.Command.stop_x)))
+                                                         content=messages.ClientUpdate(command=messages.Command.stop_x)),
+                                        answer_wait=False)
 
     def stop_y(self):
         self.app.exchanger.send_message(messages.Message(type=messages.MessageType.CLIENT_UPDATE,
-                                                         autor=self.app.exchanger.user.user_id,
+                                                         author=self.app.exchanger.user.user_id,
                                                          receiver="server",
-                                                         content=messages.ClientUpdate(command=messages.Command.stop_y)))
+                                                         content=messages.ClientUpdate(command=messages.Command.stop_y)),
+                                        answer_wait=False)

@@ -2,11 +2,14 @@ import queue
 import random
 import time
 
+from pygame.display import update
+
 from common.exchange.messages import Object
 from .data_base import new_session
 from common import model
 from sqlalchemy import and_
 from server import config as server_config
+from server.player import Player
 from common import a_non_i
 from common.world import World
 from common.blueprint_game_objects import Creature
@@ -26,25 +29,35 @@ class Game:
     def add_player(self, id):
         with new_session() as session:
             db_player = session.query(model.Player).filter(and_(model.Player.id == id,
-                                                             model.Player.game_id == self.game_id)).first()
+                                                                model.Player.game_id == self.game_id)).first()
             if db_player is None:
-                human = Human(x=random.randint(0, self.world.size[0]),
-                              y=random.randint(0, self.world.size[1]))
-                player_obj = self.world.create_objects([human], sync=True)[0]
+                player_obj = Human(x=random.randint(0, self.world.size[0]),
+                                   y=random.randint(0, self.world.size[1]),
+                                   is_avatar=True)
+                player_obj.brain = False
+                self.world.create_objects([player_obj], sync=True)
 
-                db_player = model.Player(id=id, game_id=self.game_id, obj_id=human.id)
+                db_player = model.Player(id=id, game_id=self.game_id, obj_id=player_obj.id)
                 session.add(db_player)
             else:
-                player_obj = session.query(model.Object).filter(model.Object.id == db_player.obj_id).first()
+                player_obj = self.world.get_object(db_player.obj_id)
 
-            self.players[id] = db_player
-        return player_obj
+            self.players[id] = Player(obj=player_obj,
+                                      world=self.world)
+
+        return model.Object(id=player_obj.id,
+                            world_id=self.world.id,
+                            data=player_obj.to_json(),
+                            cls=player_obj.__class__.__name__)
 
     def load_a_non_i(self):
         for obj in self.world.objects(base_cls=Creature):
-            obj.brain = a_non_i.Context(obj=obj,
-                                        state=a_non_i.CalmState,
-                                        world=self.world)
+            if obj.id in [p.obj.id for p in self.players.values()]:
+                continue
+            if not obj.is_avatar:
+                obj.brain = a_non_i.Context(obj=obj,
+                                            state=a_non_i.CalmState,
+                                            world=self.world)
 
     def update(self):
         while True:
@@ -54,6 +67,9 @@ class Game:
             for creature in self.world.objects(base_cls=Creature):
                 if creature.brain is not None:
                     updates.append(creature.brain.update())
+
+            for player in self.players.values():
+                updates.append(player.update())
 
             self.app.exchanger.broadcast(chunks=[],
                                          objects=updates,

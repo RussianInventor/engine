@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from common.exchange import messages
 from common import model, world as world_base
 from sqlalchemy import or_
+from sqlalchemy.orm import make_transient
 import uuid
 
 from common.exchange.messages import MessageType, GetGamesResponse, ResultResponse, GameInfo, RunGameResponse, \
@@ -30,6 +31,7 @@ class IdleState(State):
         if msg.type == messages.MessageType.RUN_GAME:
             with new_session() as session:
                 game_info = session.query(model.GameInfo).filter(model.GameInfo.game_id == msg.content.game_id).first()
+                # game_info.get_dict()
 
                 world = session.query(model.World) \
                     .filter(model.World.id == game_info.world_ids[game_info.current_world_index]) \
@@ -49,7 +51,8 @@ class IdleState(State):
                                                objects=[messages.Object(**ob.get_dict()) for ob in objects.all()]
                                            ))
                 self.app.exchanger.answer(msg=new_msg)
-            self.app.set_state(GamingState, game_info=game_info, starter_id=msg.author)
+                info = model.GameInfo(**game_info.get_dict())
+            self.app.set_state(GamingState, game_info=info, starter_id=msg.author)
 
         if msg.type == messages.MessageType.GET_GAMES:
             with new_session() as session:
@@ -57,18 +60,18 @@ class IdleState(State):
                 q = q.filter(or_(model.GameInfo.private == False,
                                  model.GameInfo.owner == msg.author))
                 games = q.all()
-            self.app.exchanger.answer(
-                msg=messages.Message(
-                    type=MessageType.GET_GAMES_RESPONSE,
-                    author='server',
-                    receiver=msg.author,
-                    content=GetGamesResponse(
-                        games=[GameInfo(id=g.game_id,
-                                        name=g.game_name,
-                                        owner=g.owner,
-                                        private=g.private) for g in games]
-                    )),
-                receiver=msg.author)
+                self.app.exchanger.answer(
+                    msg=messages.Message(
+                        type=MessageType.GET_GAMES_RESPONSE,
+                        author='server',
+                        receiver=msg.author,
+                        content=GetGamesResponse(
+                            games=[GameInfo(id=g.game_id,
+                                            name=g.game_name,
+                                            owner=g.owner,
+                                            private=g.private) for g in games]
+                        )),
+                    receiver=msg.author)
             # msg.answer(
             #     content={"worlds": [{c.name: i.__getattribute__(c.name) for c in i.__table__.c} for i in worlds]})
             # self.exchange.send_message(message.author, answer)
@@ -119,12 +122,11 @@ class IdleState(State):
             with new_session() as session:
                 try:
                     game_info = session.query(model.GameInfo).filter(model.GameInfo.game_id == game_id).first()
-
+                    session.query(model.Player).filter(model.Player.game_id == game_id).delete()
                     session.query(model.Object).filter(model.Object.world_id.in_(game_info.world_ids)).delete()
                     session.query(model.Chunk).filter(model.Chunk.world_id.in_(game_info.world_ids)).delete()
                     session.query(model.World).filter(model.World.id.in_(game_info.world_ids)).delete()
                     session.delete(session.query(model.GameInfo).filter(game_id == game_id).first())
-                    session.commit()
                     self.app.exchanger.answer(msg=messages.Message(type=MessageType.RESULT,
                                                                    author="server",
                                                                    receiver=msg.author,
@@ -152,12 +154,14 @@ class GamingState(State):
             self.app.clients[msg.author] = 1
             self.app.game.add_player(msg.author)
         if msg.type == messages.MessageType.CLIENT_UPDATE:
-            self.app.game.players[msg.author].__getattr__(msg.content.command)
+            command = self.app.game.players[msg.author].__getattribute__(msg.content.command.value)
+            if callable(command):
+                command()
 
         if msg.type == messages.MessageType.ADD_PLAYER_REQUEST:
-            player_obj = self.app.game.add_player(id=msg.author)
+            player_obj_data = self.app.game.add_player(id=msg.author)
             self.app.exchanger.answer(msg=messages.Message(type=MessageType.RESULT,
                                                            author="server",
                                                            receiver=msg.author,
-                                                           content=AddPlayerResponse(obj_id=player_obj.id,
-                                                                                     obj_data=player_obj.get_dict())))
+                                                           content=AddPlayerResponse(obj_id=player_obj_data.id,
+                                                                                     obj_data=player_obj_data.get_dict())))

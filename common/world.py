@@ -113,7 +113,6 @@ class World(Storable):
                 session.add(db_obj)
             if not sync:
                 self._new_objects_updates.append(db_obj.get_dict())
-        return result
 
     def pop_object(self, obj_id):
         return self._objects.pop(obj_id)

@@ -50,7 +50,12 @@ class CalmState(State):
         while chu in self.context.obj.forbidden_chunks:
             self.target = (random.randint(self.context.obj.x-self.context.obj.vision, self.context.obj.x+self.context.obj.vision),
                            random.randint(self.context.obj.y-self.context.obj.vision, self.context.obj.y+self.context.obj.vision))
-            chu = self.context.world.define_chunk(*self.target).biome
+
+            try:
+                chu = self.context.world.define_chunk(*self.target).biome
+            except IndexError:
+                pass
+
         self.context.obj.speed(*self.target)
 
     def update(self):
