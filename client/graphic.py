@@ -198,6 +198,8 @@ class DrawWorld:
                     for chunk in row:
                         self.load_img_chunk(chunk)
             self.screen.fill((0, 0, 0))
+            self.camera.v_x = self.app.game.player.obj.v_x
+            self.camera.v_y = self.app.game.player.obj.v_y
             self.camera.move()
             for chunk in self.visible_chunks(self.app.game.world.chunks):
                 self.draw_chunk(chunk)

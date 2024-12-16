@@ -30,7 +30,7 @@ logging.basicConfig(format="%(levelname)s \t %(pathname)s \t %(message)s", filem
 log = logging.getLogger()
 log.addHandler(logging.FileHandler("log/server.log"))
 log.setLevel(logging.INFO)
-sys.stderr = open("log/server.err", mode="w")
+sys.stderr = open("log/server.err", mode="w", encoding="utf-8")
 server = ServerApp(Config.host, port)
 server.set_state(IdleState)
 server.run()

@@ -34,7 +34,6 @@ class Game:
                 player_obj = Human(x=random.randint(0, self.world.size[0]),
                                    y=random.randint(0, self.world.size[1]),
                                    is_avatar=True)
-                player_obj.brain = False
                 self.world.create_objects([player_obj], sync=True)
 
                 db_player = model.Player(id=id, game_id=self.game_id, obj_id=player_obj.id)
