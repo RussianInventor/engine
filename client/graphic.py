@@ -130,7 +130,8 @@ class DrawWorld:
         self.screen = pygame.display.set_mode((0, 0))
 
     def show_debug(self, screen, objects: List[ObjectBlueprint]):
-        txt = self.big_font.render(f" fps: {self.camera.fps}", 0, [255, 255, 255])
+        txt = self.big_font.render(f" fps: {self.camera.fps}    xv: {self.app.game.player.v_x}   yv: {self.app.game.player.v_y}",
+                                   0, [255, 255, 255])
         screen.blit(txt, (5, 5))
         for obj in objects:
             text = f"{(round(obj.x, 1), round(obj.y, 1))}"
