@@ -47,7 +47,7 @@ class Player:
 
     @property
     def step(self):
-        return 1
+        return self.obj.v
 
     def down(self):
         self.v_y = self.step

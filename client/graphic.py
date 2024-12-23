@@ -115,6 +115,10 @@ class Camera:
         self.x += self.v_x
         self.y += self.v_y
 
+    def follow_player(self, player):
+        self.x = player.x - self.unscaled(self.vis_size_w)/2
+        self.y = player.y - self.unscaled(self.vis_size_h)/2
+
 
 class DrawWorld:
     SOURCE = Config.SOURCE
@@ -133,6 +137,7 @@ class DrawWorld:
         txt = self.big_font.render(f" fps: {self.camera.fps}    xv: {self.app.game.player.v_x}   yv: {self.app.game.player.v_y}",
                                    0, [255, 255, 255])
         screen.blit(txt, (5, 5))
+
         for obj in objects:
             text = f"{(round(obj.x, 1), round(obj.y, 1))}"
             if isinstance(obj, Creature) and obj.brain is not None:
@@ -199,9 +204,11 @@ class DrawWorld:
                     for chunk in row:
                         self.load_img_chunk(chunk)
             self.screen.fill((0, 0, 0))
-            self.camera.v_x = self.app.game.player.obj.v_x
-            self.camera.v_y = self.app.game.player.obj.v_y
-            self.camera.move()
+            # self.camera.v_x = self.app.game.player.obj.v_x
+            # self.camera.v_y = self.app.game.player.obj.v_y
+            # self.camera.move()
+            self.camera.follow_player(self.app.game.player)
+
             for chunk in self.visible_chunks(self.app.game.world.chunks):
                 self.draw_chunk(chunk)
             if self.camera.camera_vis:
@@ -211,7 +218,7 @@ class DrawWorld:
                                   key=lambda ob: ob.y):
                     self.draw_obj(obj)
             if DEBUG:
-                self.show_debug(self.screen, self.app.game.world.objects(Creature))
+                self.show_debug(self.screen, self.app.game.world.objects())
             pygame.display.update()
             frame_end = time.time()
             self.camera.fps = int(1 / (frame_end - frame_start))
