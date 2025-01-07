@@ -162,6 +162,8 @@ class World(Storable):
             g_obj = cur_cls.from_json(obj.data)
             x, y = g_obj.chunk_indexes()
             world.add_object(g_obj)
+            if hasattr(obj, "master_id") and obj.master_id is not None:
+                continue
             world.chunks[y][x].add_object(g_obj)
 
     def save(self, session):

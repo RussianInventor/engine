@@ -5,6 +5,7 @@ import uuid
 from abc import ABC
 import json
 from common.config import Config
+from . import inventory
 
 
 DEFAULT = 'default'
@@ -75,6 +76,7 @@ class ObjectBlueprint(ABC):
 class Item(ObjectBlueprint):
     def __init__(self, x, y):
         super().__init__(x=x, y=y)
+        self.master_id = None
 
 
 class Creature(ObjectBlueprint):
@@ -83,6 +85,7 @@ class Creature(ObjectBlueprint):
     def __init__(self, x, y, hp, max_hp, v, vision, is_avatar=False, **kwargs):
         super().__init__(x=x, y=y, **kwargs)
         self.v = v
+        self.inventory = inventory.Inventory(master=self)
         self.v_x = 0
         self.v_y = 0
         self._hp = hp

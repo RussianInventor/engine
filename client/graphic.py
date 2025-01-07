@@ -2,11 +2,13 @@ from typing import List
 import time
 import pygame
 from os import path
+from common import inventory
 
 import common.world
 from common.config import Config
 from common.blueprint_game_objects import ObjectBlueprint, Creature
 from common.model import Biome
+
 DEBUG = False
 
 chunk_color = {Biome("field"): (0, 200, 0),
@@ -116,8 +118,8 @@ class Camera:
         self.y += self.v_y
 
     def follow_player(self, player):
-        self.x = player.x - self.unscaled(self.vis_size_w)/2
-        self.y = player.y - self.unscaled(self.vis_size_h)/2
+        self.x = player.x - self.unscaled(self.vis_size_w) / 2
+        self.y = player.y - self.unscaled(self.vis_size_h) / 2
 
 
 class DrawWorld:
@@ -132,10 +134,12 @@ class DrawWorld:
         self.big_font = pygame.font.SysFont("Consoles", 50)
         self.small_font = pygame.font.SysFont("Consoles", 25)
         self.screen = pygame.display.set_mode((0, 0))
+        self.inventory_is_open = False
 
     def show_debug(self, screen, objects: List[ObjectBlueprint]):
-        txt = self.big_font.render(f" fps: {self.camera.fps}    xv: {self.app.game.player.v_x}   yv: {self.app.game.player.v_y}",
-                                   0, [255, 255, 255])
+        txt = self.big_font.render(
+            f" fps: {self.camera.fps}    xv: {self.app.game.player.v_x}   yv: {self.app.game.player.v_y}",
+            0, [255, 255, 255])
         screen.blit(txt, (5, 5))
 
         for obj in objects:
@@ -175,6 +179,8 @@ class DrawWorld:
                         Config.scale_index = max(Config.scale_index, 0)
                     self.camera.set_scale(Config.scale)
                 if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_TAB:
+                        self.inventory_is_open = not self.inventory_is_open
                     if event.key == pygame.K_ESCAPE:
                         pygame.display.quit()
                         pygame.quit()
@@ -217,6 +223,8 @@ class DrawWorld:
                 for obj in sorted(list(chunk.objects(self.app.game.world)),
                                   key=lambda ob: ob.y):
                     self.draw_obj(obj)
+            if self.inventory_is_open:
+                self.draw_inventory(invent1=self.app.game.player.avatar.inventory)
             if DEBUG:
                 self.show_debug(self.screen, self.app.game.world.objects())
             pygame.display.update()
@@ -277,6 +285,38 @@ class DrawWorld:
         img_path = path.join(self.SOURCE, chunk_color[chunk.biome])
         img = pygame.image.load(img_path)
         w, h = Config.CHUNK_SIZE, Config.CHUNK_SIZE
-        img = pygame.transform.scale(img, (self.camera.scaled(w)+1, self.camera.scaled(h)+1))
+        img = pygame.transform.scale(img, (self.camera.scaled(w) + 1, self.camera.scaled(h) + 1))
         self.sprites.add_img(img=img, scale=self.camera.scale, key=img_path)
         chunk.add_img_key(img_path)
+
+    def draw_inventory(self, invent1: inventory.Inventory,
+                       invent2: inventory.Inventory = None):
+        x = 20
+        y = 20
+        new_x = x
+        new_y = y
+        w = self.camera.vis_size_w - x
+        h = self.camera.vis_size_h - y
+        if invent2 is None:
+            margin = 2
+            cell_w = w // (invent1.w + margin)
+            cell_h = h // (invent1.h + margin)
+            pygame.draw.rect(self.screen, (125, 125, 125), pygame.Rect(x, y, w, h))
+            for i, obj in enumerate(invent1.items):
+                pygame.draw.rect(self.screen, (50, 50, 50), pygame.Rect(new_x + margin, new_y, cell_w, cell_h))
+                img = self.sprites.get(scale=self.camera.scale,
+                                       key=obj.img_key)
+                pos = self.camera.pos_shift(obj.x, obj.y)
+                self.screen.blit(img,
+                                 (pos[0] - obj.shift_img_x * img.get_size()[0],
+                                  pos[1] - obj.shift_img_y * img.get_size()[1]))
+                if new_x + margin + cell_w <= x + w - margin:
+                    new_x += x
+                else:
+                    new_x = x
+                    new_y += y + margin
+        else:
+            pygame.draw.rect(self.screen, (125, 125, 125), pygame.Rect(x, y, int(w/2), int(h/2)))
+            pygame.draw.rect(self.screen, (125, 125, 125), pygame.Rect(int(w/2) + 2 * x,
+                                                                       int(h/2) + 2 * y,
+                                                                       int(w/2), int(h/2)))
