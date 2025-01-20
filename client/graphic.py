@@ -135,6 +135,7 @@ class DrawWorld:
         self.small_font = pygame.font.SysFont("Consoles", 25)
         self.screen = pygame.display.set_mode((0, 0))
         self.inventory_is_open = False
+        self.inventory_cells = []
 
     def show_debug(self, screen, objects: List[ObjectBlueprint]):
         txt = self.big_font.render(
@@ -170,6 +171,12 @@ class DrawWorld:
                     pygame.display.quit()
                     pygame.quit()
                     return
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.inventory_is_open and self.inventory_cells:
+                        for i, bbox in enumerate(self.inventory_cells):
+                            if bbox[0] < event.pos[0] < bbox[0] + bbox[2] and bbox[1] < event.pos[1] < bbox[1] + bbox[3]:
+                                print('>>>>>>>>>>>>', i)
+                                break
                 if event.type == pygame.MOUSEWHEEL:
                     if event.y > 0:
                         Config.scale_index += 1
@@ -289,35 +296,97 @@ class DrawWorld:
         self.sprites.add_img(img=img, scale=self.camera.scale, key=img_path)
         chunk.add_img_key(img_path)
 
+    def inventory_bboxes(self, invent, margin, cell_w, cell_h, x0, y0):
+        res = []
+        for y in range(len(invent.items) // invent.w):
+            row = invent.items[y * invent.w: (y + 1) * invent.w]
+            for x, obj in enumerate(row):
+                res.append((x0 + margin + (cell_w + margin) * x,
+                            y0 + margin + (cell_h + margin) * y,
+                            cell_w,
+                            cell_h))
+        return res
+
+    def draw_single_inventory(self, invent):
+        x0 = 20
+        y0 = 20
+        w = self.camera.vis_size_w - 2 * x0
+        h = self.camera.vis_size_h - 2 * y0
+        margin = 2
+        cell_w = w // (invent.w + margin) - margin
+        cell_h = h // (invent.h + margin) - margin
+        pygame.draw.rect(self.screen, (125, 125, 125), pygame.Rect(x0, y0, w, h))
+        bboxes = self.inventory_bboxes(invent=invent,
+                                       margin=margin,
+                                       cell_w=cell_w,
+                                       cell_h=cell_h,
+                                       x0=x0,
+                                       y0=y0)
+
+        if invent.master_id == self.app.game.player.obj.id:
+            self.inventory_cells = bboxes
+
+        for i, bbox in enumerate(bboxes):
+            pygame.draw.rect(self.screen,
+                             color=(50, 50, 50),
+                             rect=pygame.Rect(*bbox))
+            obj = invent.items[i]
+            if obj is not None:
+                img = self.sprites.get(scale=self.camera.scale,
+                                       key=obj.img_key)
+                pos = self.camera.pos_shift(obj.x, obj.y)
+                self.screen.blit(img,
+                                 (pos[0] - obj.shift_img_x * img.get_size()[0],
+                                  pos[1] - obj.shift_img_y * img.get_size()[1]))
+
+        # for y in range(len(invent.items)//invent.w):
+        #     row = invent.items[y*invent.w: (y+1)*invent.w]
+        #     for x, obj in enumerate(row):
+        #         pygame.draw.rect(self.screen,
+        #                          color=(50, 50, 50),
+        #                          rect=pygame.Rect(x0 + margin + (cell_w + margin) * x,
+        #                                           y0 + margin + (cell_h + margin) * y,
+        #                                           cell_w,
+        #                                           cell_h))
+        #         if obj is not None:
+        #             img = self.sprites.get(scale=self.camera.scale,
+        #                                    key=obj.img_key)
+        #             pos = self.camera.pos_shift(obj.x, obj.y)
+        #             self.screen.blit(img,
+        #                              (pos[0] - obj.shift_img_x * img.get_size()[0],
+        #                               pos[1] - obj.shift_img_y * img.get_size()[1]))
+
     def draw_inventory(self, invent1: inventory.Inventory,
                        invent2: inventory.Inventory = None):
-        x = 20
-        y = 20
-        new_x = x
-        new_y = y
-        w = self.camera.vis_size_w - x
-        h = self.camera.vis_size_h - y
-        if invent2 is None:
-            margin = 2
-            cell_w = w // (invent1.w + margin) - margin
-            cell_h = h // (invent1.h + margin) - margin
-            pygame.draw.rect(self.screen, (125, 125, 125), pygame.Rect(x, y, w, h))
-            for i, obj in enumerate(invent1.items):
-                pygame.draw.rect(self.screen, (50, 50, 50), pygame.Rect(new_x + margin, new_y, cell_w, cell_h))
-                if obj is not None:
-                    img = self.sprites.get(scale=self.camera.scale,
-                                           key=obj.img_key)
-                    pos = self.camera.pos_shift(obj.x, obj.y)
-                    self.screen.blit(img,
-                                     (pos[0] - obj.shift_img_x * img.get_size()[0],
-                                      pos[1] - obj.shift_img_y * img.get_size()[1]))
-                if new_x + margin + cell_w <= x + w - margin:
-                    new_x += x + margin
-                else:
-                    new_x = x
-                    new_y += y + margin
-        else:
-            pygame.draw.rect(self.screen, (125, 125, 125), pygame.Rect(x, y, int(w / 2), int(h / 2)))
-            pygame.draw.rect(self.screen, (125, 125, 125), pygame.Rect(int(w / 2) + 2 * x,
-                                                                       int(h / 2) + 2 * y,
-                                                                       int(w / 2), int(h / 2)))
+        self.draw_single_inventory(invent1)
+        # x0 = 20
+        # y0 = 20
+        #
+        # new_x = x
+        # new_y = y
+        # w = self.camera.vis_size_w - x
+        # h = self.camera.vis_size_h - y
+        # if invent2 is None:
+        #     margin = 2
+        #     cell_w = w // (invent1.w + margin) - margin
+        #     cell_h = h // (invent1.h + margin) - margin
+        #     pygame.draw.rect(self.screen, (125, 125, 125), pygame.Rect(x, y, w, h))
+        #     for i, obj in enumerate(invent1.items):
+        #         pygame.draw.rect(self.screen, (50, 50, 50), pygame.Rect(new_x + margin, new_y, cell_w, cell_h))
+        #         if obj is not None:
+        #             img = self.sprites.get(scale=self.camera.scale,
+        #                                    key=obj.img_key)
+        #             pos = self.camera.pos_shift(obj.x, obj.y)
+        #             self.screen.blit(img,
+        #                              (pos[0] - obj.shift_img_x * img.get_size()[0],
+        #                               pos[1] - obj.shift_img_y * img.get_size()[1]))
+        #         if new_x + margin + cell_w <= x + w - margin:
+        #             new_x += x + margin
+        #         else:
+        #             new_x = x
+        #             new_y += y + margin
+        # else:
+        #     pygame.draw.rect(self.screen, (125, 125, 125), pygame.Rect(x, y, int(w / 2), int(h / 2)))
+        #     pygame.draw.rect(self.screen, (125, 125, 125), pygame.Rect(int(w / 2) + 2 * x,
+        #                                                                int(h / 2) + 2 * y,
+        #                                                                int(w / 2), int(h / 2)))
