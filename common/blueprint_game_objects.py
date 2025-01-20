@@ -1,12 +1,11 @@
 import math
 import random
-import select
 import uuid
 from abc import ABC
 import json
 from common.config import Config
 from . import inventory
-
+from .utils import Encoder
 
 DEFAULT = 'default'
 
@@ -51,7 +50,7 @@ class ObjectBlueprint(ABC):
         return cls(**json.loads(data))
 
     def to_json(self):
-        ret = json.dumps(self.__dict__)
+        ret = json.dumps(self.__dict__, cls=Encoder)
         return ret
 
     def chunk_indexes(self):

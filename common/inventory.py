@@ -1,4 +1,6 @@
 from . import config
+import json
+from .utils import Encoder
 
 
 class Inventory:
@@ -10,6 +12,11 @@ class Inventory:
         self.current_ind = None
         self.master = master
         self.master_id = master.id
+
+    def json_dict(self):
+        d = self.__dict__.copy()
+        d.pop('master')
+        json.dumps(d, cls=Encoder)
 
     def leave(self):
         if self.current_item is not None:
