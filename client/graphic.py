@@ -224,7 +224,7 @@ class DrawWorld:
                                   key=lambda ob: ob.y):
                     self.draw_obj(obj)
             if self.inventory_is_open:
-                self.draw_inventory(invent1=self.app.game.player.avatar.inventory)
+                self.draw_inventory(invent1=self.app.game.player.obj.inventory)
             if DEBUG:
                 self.show_debug(self.screen, self.app.game.world.objects())
             pygame.display.update()
@@ -299,24 +299,25 @@ class DrawWorld:
         h = self.camera.vis_size_h - y
         if invent2 is None:
             margin = 2
-            cell_w = w // (invent1.w + margin)
-            cell_h = h // (invent1.h + margin)
+            cell_w = w // (invent1.w + margin) - margin
+            cell_h = h // (invent1.h + margin) - margin
             pygame.draw.rect(self.screen, (125, 125, 125), pygame.Rect(x, y, w, h))
             for i, obj in enumerate(invent1.items):
                 pygame.draw.rect(self.screen, (50, 50, 50), pygame.Rect(new_x + margin, new_y, cell_w, cell_h))
-                img = self.sprites.get(scale=self.camera.scale,
-                                       key=obj.img_key)
-                pos = self.camera.pos_shift(obj.x, obj.y)
-                self.screen.blit(img,
-                                 (pos[0] - obj.shift_img_x * img.get_size()[0],
-                                  pos[1] - obj.shift_img_y * img.get_size()[1]))
+                if obj is not None:
+                    img = self.sprites.get(scale=self.camera.scale,
+                                           key=obj.img_key)
+                    pos = self.camera.pos_shift(obj.x, obj.y)
+                    self.screen.blit(img,
+                                     (pos[0] - obj.shift_img_x * img.get_size()[0],
+                                      pos[1] - obj.shift_img_y * img.get_size()[1]))
                 if new_x + margin + cell_w <= x + w - margin:
-                    new_x += x
+                    new_x += x + margin
                 else:
                     new_x = x
                     new_y += y + margin
         else:
-            pygame.draw.rect(self.screen, (125, 125, 125), pygame.Rect(x, y, int(w/2), int(h/2)))
-            pygame.draw.rect(self.screen, (125, 125, 125), pygame.Rect(int(w/2) + 2 * x,
-                                                                       int(h/2) + 2 * y,
-                                                                       int(w/2), int(h/2)))
+            pygame.draw.rect(self.screen, (125, 125, 125), pygame.Rect(x, y, int(w / 2), int(h / 2)))
+            pygame.draw.rect(self.screen, (125, 125, 125), pygame.Rect(int(w / 2) + 2 * x,
+                                                                       int(h / 2) + 2 * y,
+                                                                       int(w / 2), int(h / 2)))
