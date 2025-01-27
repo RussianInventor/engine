@@ -1,5 +1,5 @@
 import math
-from common import blueprint_game_objects
+from common import blueprint_game_objects, game_objects
 
 
 class Player:
@@ -74,3 +74,6 @@ class Player:
         else:
             self.obj.x += self.obj.v * self.v_x
             self.obj.y += self.obj.v * self.v_y
+
+    def create_stick(self):
+        self.world.create_objects(objs=[game_objects.Stick(self.obj.x + 3, self.obj.y + 3)], sync=True)

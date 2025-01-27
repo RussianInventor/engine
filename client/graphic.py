@@ -175,8 +175,16 @@ class DrawWorld:
                     if self.inventory_is_open and self.inventory_cells:
                         for i, bbox in enumerate(self.inventory_cells):
                             if bbox[0] < event.pos[0] < bbox[0] + bbox[2] and bbox[1] < event.pos[1] < bbox[1] + bbox[3]:
-                                print('>>>>>>>>>>>>', i)
+                                self.app.game.player.obj.inventory.take(i)
                                 break
+                if event.type == pygame.MOUSEBUTTONUP:
+                    if self.inventory_is_open and self.inventory_cells:
+                        for i, bbox in enumerate(self.inventory_cells):
+                            if bbox[0] < event.pos[0] < bbox[0] + bbox[2] and bbox[1] < event.pos[1] < bbox[1] + bbox[3]:
+                                self.app.game.player.obj.inventory.select(i)
+                                self.app.game.player.obj.inventory.leave()
+                                break
+
                 if event.type == pygame.MOUSEWHEEL:
                     if event.y > 0:
                         Config.scale_index += 1
@@ -188,6 +196,8 @@ class DrawWorld:
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_TAB:
                         self.inventory_is_open = not self.inventory_is_open
+                    if event.key == pygame.K_1:
+                        self.app.game.player.create_stick()
                     if event.key == pygame.K_ESCAPE:
                         pygame.display.quit()
                         pygame.quit()

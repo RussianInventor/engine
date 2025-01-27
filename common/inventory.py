@@ -31,6 +31,8 @@ class Inventory:
         self.current_ind = index
 
     def take(self, index):
+        if self.items[index] is None:
+            return
         self.select(index)
         self.current_item = self.items[self.current_ind]
         self.items[self.current_ind] = None

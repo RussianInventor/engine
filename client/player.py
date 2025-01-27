@@ -37,6 +37,13 @@ class Player:
     def step(self):
         return 1
 
+    def create_stick(self):
+        self.app.exchanger.send_message(messages.Message(type=messages.MessageType.CLIENT_UPDATE,
+                                                         author=self.app.exchanger.user.user_id,
+                                                         receiver="server",
+                                                         content=messages.ClientUpdate(command=messages.Command.create_stick)),
+                                        answer_wait=False)
+
     def down(self):
         self.app.exchanger.send_message(messages.Message(type=messages.MessageType.CLIENT_UPDATE,
                                                          author=self.app.exchanger.user.user_id,

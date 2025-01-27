@@ -73,8 +73,8 @@ class ObjectBlueprint(ABC):
 
 
 class Item(ObjectBlueprint):
-    def __init__(self, x, y):
-        super().__init__(x=x, y=y)
+    def __init__(self, x, y, **kwargs):
+        super().__init__(x=x, y=y, **kwargs)
         self.master_id = None
 
 

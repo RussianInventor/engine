@@ -33,3 +33,8 @@ class Human(blueprint_game_objects.Creature):
         super().__init__(x=x, y=y, hp=_hp, max_hp=max_hp, v=v, vision=vision, **kwargs)
         self.w = 16
         self.h = 16
+
+
+class Stick(blueprint_game_objects.Item):
+    def __init__(self, x, y, **kwargs):
+        super().__init__(x=x, y=y, **kwargs)
