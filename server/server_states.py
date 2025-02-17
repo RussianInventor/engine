@@ -156,8 +156,7 @@ class GamingState(State):
         if msg.type == messages.MessageType.CLIENT_UPDATE:
             command = self.app.game.players[msg.author].__getattribute__(msg.content.command.value)
             if callable(command):
-                command()
-
+                result = command(**msg.content.kwargs)
         if msg.type == messages.MessageType.ADD_PLAYER_REQUEST:
             player_obj_data = self.app.game.add_player(id=msg.author)
             self.app.exchanger.answer(msg=messages.Message(type=MessageType.RESULT,

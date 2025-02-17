@@ -76,4 +76,8 @@ class Player:
             self.obj.y += self.obj.v * self.v_y
 
     def create_stick(self):
-        self.world.create_objects(objs=[game_objects.Stick(self.obj.x + 3, self.obj.y + 3)], sync=True)
+        self.world.create_objects(objs=[game_objects.Stick(self.obj.x + 3, self.obj.y + 3)], sync=False)
+
+    def take_item(self, item_id, index=None):
+        item = self.world.get_object(item_id)
+        return self.obj.inventory.add(item, index)

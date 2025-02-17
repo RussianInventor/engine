@@ -1,5 +1,5 @@
 import json
-
+from collections import namedtuple
 from common import model
 from server.data_base import upsert, new_session
 from . import blueprint_game_objects, game_objects
@@ -64,9 +64,12 @@ class Chunk(Storable):
     def add_object(self, obj):
         self.object_ids.append(obj.id)
 
-    def objects(self, world, base_cls=None):
+    def objects(self, world, base_cls=None, only_free=True):
         for id in self.object_ids:
             obj = world.get_object(obj_id=id)
+            if isinstance(obj, blueprint_game_objects.Item) and only_free:
+                if obj.master_id is not None:
+                    continue
             if base_cls is None:
                 yield obj
             elif isinstance(obj, base_cls):
@@ -95,7 +98,7 @@ class World(Storable):
         return updates
 
     def define_chunk(self, x, y) -> Chunk:
-        return self.chunks[y // Config.CHUNK_SIZE][x // Config.CHUNK_SIZE]
+        return self.chunks[int(y // Config.CHUNK_SIZE)][int(x // Config.CHUNK_SIZE)]
 
     def add_object(self, obj: blueprint_game_objects.ObjectBlueprint):
         self._objects[obj.id] = obj
@@ -158,6 +161,11 @@ class World(Storable):
     def load_objs(cls, object_objs, world):
         clses = vars(game_objects)
         for obj in object_objs:
+
+            if isinstance(obj, dict):
+                # cur_cls = clses[obj['cls']]
+                obj = namedtuple(typename='Object',
+                                 field_names=obj.keys())(**obj)
             cur_cls = clses[obj.cls]
             g_obj = cur_cls.from_json(obj.data)
             x, y = g_obj.chunk_indexes()

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Annotated
+from typing import List, Annotated, Optional
 import time
 from enum import Enum
 from dataclasses import dataclass
@@ -64,6 +64,7 @@ class Command(Enum):
     stop_x = "stop_x"
     stop_y = "stop_y"
     create_stick = "create_stick"
+    take_item = 'take_item'
 
 
 ########################################################################################################################
@@ -122,6 +123,7 @@ class WorldUpdate(BaseModel):
 ########################################################################################################################
 class ClientUpdate(BaseModel):
     command: Command
+    kwargs: Optional[dict] = {}
 
 
 ########################################################################################################################

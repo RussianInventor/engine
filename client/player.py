@@ -41,7 +41,8 @@ class Player:
         self.app.exchanger.send_message(messages.Message(type=messages.MessageType.CLIENT_UPDATE,
                                                          author=self.app.exchanger.user.user_id,
                                                          receiver="server",
-                                                         content=messages.ClientUpdate(command=messages.Command.create_stick)),
+                                                         content=messages.ClientUpdate(
+                                                             command=messages.Command.create_stick)),
                                         answer_wait=False)
 
     def down(self):
@@ -76,12 +77,24 @@ class Player:
         self.app.exchanger.send_message(messages.Message(type=messages.MessageType.CLIENT_UPDATE,
                                                          author=self.app.exchanger.user.user_id,
                                                          receiver="server",
-                                                         content=messages.ClientUpdate(command=messages.Command.stop_x)),
+                                                         content=messages.ClientUpdate(
+                                                             command=messages.Command.stop_x)),
                                         answer_wait=False)
 
     def stop_y(self):
         self.app.exchanger.send_message(messages.Message(type=messages.MessageType.CLIENT_UPDATE,
                                                          author=self.app.exchanger.user.user_id,
                                                          receiver="server",
-                                                         content=messages.ClientUpdate(command=messages.Command.stop_y)),
+                                                         content=messages.ClientUpdate(
+                                                             command=messages.Command.stop_y)),
+                                        answer_wait=False)
+
+    def take_item(self, item_id):
+        self.app.exchanger.send_message(messages.Message(type=messages.MessageType.CLIENT_UPDATE,
+                                                         author=self.app.exchanger.user.user_id,
+                                                         receiver="server",
+                                                         content=messages.ClientUpdate(
+                                                             command=messages.Command.take_item,
+                                                             kwargs={'item_id': item_id})
+                                                         ),
                                         answer_wait=False)

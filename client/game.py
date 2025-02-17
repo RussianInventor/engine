@@ -31,12 +31,18 @@ class Game:
         while not self.update_queue.empty():
             msg = self.update_queue.get()
             for obj in msg.content.objects:
-                y = int(obj.pop("old_y") // GameConfig.CHUNK_SIZE)
-                x = int(obj.pop("old_x") // GameConfig.CHUNK_SIZE)
+                try:
+                    y = int(obj.pop("old_y") // GameConfig.CHUNK_SIZE)
+                    x = int(obj.pop("old_x") // GameConfig.CHUNK_SIZE)
+                except KeyError:
+                    pass
                 obj_id = obj.pop("id")
                 creature = self.world.get_object(obj_id)
                 for atr, val in obj.items():
-                    creature.__setattr__(atr, val)
+                    if atr == 'inventory':
+                        creature.inventory.items = val['items']
+                    else:
+                        creature.__setattr__(atr, val)
                 self.world.switch_chunk(creature)
             self.world.load_objs(object_objs=msg.content.new_objects,
                                  world=self.world)

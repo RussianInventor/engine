@@ -12,7 +12,7 @@ from server import config as server_config
 from server.player import Player
 from common import a_non_i
 from common.world import World
-from common.blueprint_game_objects import Creature
+from common.blueprint_game_objects import Creature, Item
 from common.game_objects import Human
 
 
@@ -65,10 +65,28 @@ class Game:
             updates = []
             for creature in self.world.objects(base_cls=Creature):
                 if creature.brain is not None:
-                    updates.append(creature.brain.update())
+                    creature_update = creature.brain.update()
+                    if creature.inventory is not None:
+                        inventory_update = creature.inventory.pop_changes()
+                        if inventory_update and creature_update is not None:
+                            creature_update['inventory'] = inventory_update
+                    updates.append(creature_update)
+
+            for item in self.world.objects(base_cls=Item):
+                changes = item.pop_changes()
+                if changes:
+                    changes['id'] = item.id
+                    updates.append(changes)
 
             for player in self.players.values():
-                updates.append(player.update())
+                player_update = player.update()
+                if player.obj.inventory is not None:
+                    inventory_update = player.obj.inventory.pop_changes()
+                    if inventory_update:
+                        if player_update is None:
+                            player_update = {"id": player.obj.id}
+                        player_update['inventory'] = inventory_update
+                updates.append(player_update)
 
             self.app.exchanger.broadcast(chunks=[],
                                          objects=updates,

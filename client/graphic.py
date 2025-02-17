@@ -6,7 +6,7 @@ from common import inventory
 
 import common.world
 from common.config import Config
-from common.blueprint_game_objects import ObjectBlueprint, Creature
+from common.blueprint_game_objects import ObjectBlueprint, Creature, Item
 from common.model import Biome
 
 DEBUG = False
@@ -174,8 +174,19 @@ class DrawWorld:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.inventory_is_open and self.inventory_cells:
                         for i, bbox in enumerate(self.inventory_cells):
-                            if bbox[0] < event.pos[0] < bbox[0] + bbox[2] and bbox[1] < event.pos[1] < bbox[1] + bbox[3]:
+                            if bbox[0] < event.pos[0] < bbox[0] + bbox[2] and bbox[1] < event.pos[1] < bbox[1] + bbox[
+                                3]:
                                 self.app.game.player.obj.inventory.take(i)
+                                break
+                    if not self.inventory_is_open:
+                        current_chunk = self.app.game.world.define_chunk(self.app.game.player.obj.x,
+                                                                         self.app.game.player.obj.y)
+                        for obj in sorted(list(current_chunk.objects(self.app.game.world, base_cls=Item)),
+                                          key=lambda ob: ob.y):
+                            x, y, w, h = self.obj_bbox(obj)
+                            if x < event.pos[0] < x + w and y < event.pos[1] < y + h:
+                                self.app.game.player.take_item(item_id=obj.id)
+                                obj.master_id = self.app.game.player.obj.id
                                 break
                 if event.type == pygame.MOUSEBUTTONUP:
                     if self.inventory_is_open and self.inventory_cells:
@@ -248,13 +259,36 @@ class DrawWorld:
             frame_end = time.time()
             self.camera.fps = int(1 / (frame_end - frame_start))
 
+    def obj_bbox(self, obj):
+        img = self.sprites.get(scale=self.camera.scale,
+                               key=obj.img_key)
+        pos = self.camera.pos_shift(obj.x, obj.y)
+        return (pos[0] - obj.shift_img_x * img.get_size()[0],
+                pos[1] - obj.shift_img_y * img.get_size()[1],
+                img.get_size()[0],
+                img.get_size()[1])
+
     def draw_obj(self, obj: ObjectBlueprint):
         img = self.sprites.get(scale=self.camera.scale,
                                key=obj.img_key)
+        if img is None:
+            self.load_img_objects(objs=[obj])
+            img = self.sprites.get(scale=self.camera.scale,
+                                   key=obj.img_key)
+
         pos = self.camera.pos_shift(obj.x, obj.y)
         self.screen.blit(img,
                          (pos[0] - obj.shift_img_x * img.get_size()[0],
                           pos[1] - obj.shift_img_y * img.get_size()[1]))
+
+        if DEBUG:
+            pygame.draw.rect(self.screen,
+                             color=(255, 0, 0),
+                             rect=pygame.Rect(pos[0] - obj.shift_img_x * img.get_size()[0],
+                                              pos[1] - obj.shift_img_y * img.get_size()[1],
+                                              img.get_size()[0],
+                                              img.get_size()[1]),
+                             width=1)
 
     def visible_chunks(self, chunks):
         x = self.camera.x // Config.CHUNK_SIZE
@@ -340,14 +374,19 @@ class DrawWorld:
             pygame.draw.rect(self.screen,
                              color=(50, 50, 50),
                              rect=pygame.Rect(*bbox))
-            obj = invent.items[i]
-            if obj is not None:
+            cell = invent.items[i]
+            if cell is not None:
+                obj = self.app.game.world.get_object(cell)
                 img = self.sprites.get(scale=self.camera.scale,
                                        key=obj.img_key)
                 pos = self.camera.pos_shift(obj.x, obj.y)
                 self.screen.blit(img,
-                                 (pos[0] - obj.shift_img_x * img.get_size()[0],
-                                  pos[1] - obj.shift_img_y * img.get_size()[1]))
+                                 dest=(
+                                     int(bbox[0] + (bbox[2] - img.get_size()[0])/2),
+                                     int(bbox[1] + (bbox[3] - img.get_size()[1])/2)
+                                       )
+                                 )
+                                  # pos[1] - obj.shift_img_y * img.get_size()[1]))
 
         # for y in range(len(invent.items)//invent.w):
         #     row = invent.items[y*invent.w: (y+1)*invent.w]

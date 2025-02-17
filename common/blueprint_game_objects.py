@@ -24,8 +24,15 @@ class ObjectBlueprint(ABC):
         self.old_x = None
         self.old_y = None
 
+        self._changes = {}
+
         for k, v in kwargs.items():
             self.__setattr__(k, v)
+
+    def pop_changes(self):
+        changes = self._changes.copy()
+        self._changes = {}
+        return changes
 
     @property
     def img_key(self):
@@ -75,7 +82,16 @@ class ObjectBlueprint(ABC):
 class Item(ObjectBlueprint):
     def __init__(self, x, y, **kwargs):
         super().__init__(x=x, y=y, **kwargs)
-        self.master_id = None
+        self._master_id = None
+
+    @property
+    def master_id(self):
+        return self._master_id
+
+    @master_id.setter
+    def master_id(self, value):
+        self._master_id = value
+        self._changes['master_id'] = value
 
 
 class Creature(ObjectBlueprint):
