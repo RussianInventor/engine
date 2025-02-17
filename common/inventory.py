@@ -44,8 +44,14 @@ class Inventory:
         self.current_ind = None
         self.current_item_id = None
 
-    def select(self, index):
-        self.current_ind = index
+    def select(self, index=None, id=None):
+        if id is not None:
+            self.current_ind = self.items.index(id)
+            return
+        elif index is not None:
+            self.current_ind = index
+        else:
+            raise RuntimeError("Index and id are None")
 
     def take(self, index):
         if self.items[index] is None:

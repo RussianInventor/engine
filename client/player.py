@@ -98,3 +98,14 @@ class Player:
                                                              kwargs={'item_id': item_id})
                                                          ),
                                         answer_wait=False)
+
+    def drop_item(self, item_id):
+        if item_id is not None:
+            self.app.exchanger.send_message(messages.Message(type=messages.MessageType.CLIENT_UPDATE,
+                                                             author=self.app.exchanger.user.user_id,
+                                                             receiver="server",
+                                                             content=messages.ClientUpdate(
+                                                                 command=messages.Command.drop_item,
+                                                                 kwags={"item_id": item_id}
+                                                             )),
+                                            answer_wait=False)

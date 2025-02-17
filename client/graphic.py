@@ -174,8 +174,8 @@ class DrawWorld:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.inventory_is_open and self.inventory_cells:
                         for i, bbox in enumerate(self.inventory_cells):
-                            if bbox[0] < event.pos[0] < bbox[0] + bbox[2] and bbox[1] < event.pos[1] < bbox[1] + bbox[
-                                3]:
+                            if (bbox[0] < event.pos[0] < bbox[0] + bbox[2] and
+                                    bbox[1] < event.pos[1] < bbox[1] + bbox[3]):
                                 self.app.game.player.obj.inventory.take(i)
                                 break
                     if not self.inventory_is_open:
@@ -192,8 +192,8 @@ class DrawWorld:
                     if self.inventory_is_open and self.inventory_cells:
                         for i, bbox in enumerate(self.inventory_cells):
                             if bbox[0] < event.pos[0] < bbox[0] + bbox[2] and bbox[1] < event.pos[1] < bbox[1] + bbox[3]:
-                                self.app.game.player.obj.inventory.select(i)
-                                self.app.game.player.obj.inventory.leave()
+                                #self.app.game.player.obj.inventory.select(i)
+                                self.app.game.player.drop_item(item_id=self.app.game.player.obj.inventory.items[i])
                                 break
 
                 if event.type == pygame.MOUSEWHEEL:

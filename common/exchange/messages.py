@@ -64,7 +64,8 @@ class Command(Enum):
     stop_x = "stop_x"
     stop_y = "stop_y"
     create_stick = "create_stick"
-    take_item = 'take_item'
+    take_item = "take_item"
+    drop_item = "drop_item"
 
 
 ########################################################################################################################

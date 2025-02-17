@@ -81,3 +81,7 @@ class Player:
     def take_item(self, item_id, index=None):
         item = self.world.get_object(item_id)
         return self.obj.inventory.add(item, index)
+
+    def drop_item(self, item_id):
+        self.obj.inventory.select(id=item_id)
+        self.obj.inventory.pop()
