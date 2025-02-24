@@ -172,13 +172,15 @@ class DrawWorld:
                     pygame.quit()
                     return
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    if self.inventory_is_open and self.inventory_cells:
+                    if self.inventory_is_open:
+                        if not self.inventory_cells:
+                            continue
                         for i, bbox in enumerate(self.inventory_cells):
                             if (bbox[0] < event.pos[0] < bbox[0] + bbox[2] and
                                     bbox[1] < event.pos[1] < bbox[1] + bbox[3]):
-                                self.app.game.player.obj.inventory.take(i)
+                                self.app.game.player.obj.inventory.take(index=i)
                                 break
-                    if not self.inventory_is_open:
+                    else:
                         current_chunk = self.app.game.world.define_chunk(self.app.game.player.obj.x,
                                                                          self.app.game.player.obj.y)
                         for obj in sorted(list(current_chunk.objects(self.app.game.world, base_cls=Item)),
@@ -189,12 +191,17 @@ class DrawWorld:
                                 obj.master_id = self.app.game.player.obj.id
                                 break
                 if event.type == pygame.MOUSEBUTTONUP:
-                    if self.inventory_is_open and self.inventory_cells:
+                    if self.inventory_is_open:
+                        if not self.inventory_cells:
+                            continue
                         for i, bbox in enumerate(self.inventory_cells):
                             if bbox[0] < event.pos[0] < bbox[0] + bbox[2] and bbox[1] < event.pos[1] < bbox[1] + bbox[3]:
-                                #self.app.game.player.obj.inventory.select(i)
-                                self.app.game.player.drop_item(item_id=self.app.game.player.obj.inventory.items[i])
+                                # self.self.app.game.player.obj.inventory.leave()
+                                self.app.game.player.obj.inventory.leave()
                                 break
+                        if self.app.game.player.obj.inventory.current_item_id:
+                            self.app.game.player.drop_item(item_id=self.app.game.player.obj.inventory.current_item_id)
+                            self.app.game.player.obj.inventory.clear_buffer()
 
                 if event.type == pygame.MOUSEWHEEL:
                     if event.y > 0:

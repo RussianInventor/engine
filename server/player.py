@@ -84,4 +84,5 @@ class Player:
 
     def drop_item(self, item_id):
         self.obj.inventory.select(id=item_id)
-        self.obj.inventory.pop()
+        self.obj.inventory.current_item_id = item_id
+        self.obj.inventory.pop(self.world)

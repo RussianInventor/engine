@@ -93,6 +93,14 @@ class Item(ObjectBlueprint):
         self._master_id = value
         self._changes['master_id'] = value
 
+    def set_master_id(self, value):
+        self._master_id = value
+        self._changes.update(master_id=value)
+
+    def set_pos(self, x, y):
+        self.x, self.y = x, y
+        self._changes.update(x=x, y=y)
+
 
 class Creature(ObjectBlueprint):
     forbidden_chunks = ()

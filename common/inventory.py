@@ -65,18 +65,22 @@ class Inventory:
         return self.items[index]
 
     def add(self, item, index=None):
-        item.master_id = self.master_id
+        if isinstance(item, str):
+            item_id = item
+        else:
+            item_id = item.id
+            item.master_id = self.master_id
         self.set_changes()
         if index is None:
             try:
-                self.items[self.items.index(None)] = item.id
+                self.items[self.items.index(None)] = item_id
                 self.clear_buffer()
                 return True
             except ValueError:
                 return False
         else:
             if self.items[index] is None:
-                self.items[index] = item.id
+                self.items[index] = item_id
                 self.clear_buffer()
                 return True
             else:
@@ -92,11 +96,11 @@ class Inventory:
     def pop(self, world):
         removed_id = self.current_item_id
         obj = world.get_object(removed_id)
-        obj.master_id = None
-        obj.x, obj.y = self.master.x, self.master.y
+        obj.set_master_id(None)
+        obj.set_pos(self.master.x, self.master.y)
+        self.remove(ind=self.current_ind)
         self.clear_buffer()
-        self.set_changes()
-        return
+        return obj
 
     def remove(self, ind):
         self.items[ind] = None

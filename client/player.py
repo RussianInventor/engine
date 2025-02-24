@@ -106,6 +106,6 @@ class Player:
                                                              receiver="server",
                                                              content=messages.ClientUpdate(
                                                                  command=messages.Command.drop_item,
-                                                                 kwags={"item_id": item_id}
+                                                                 kwargs={"item_id": item_id}
                                                              )),
                                             answer_wait=False)
