@@ -90,22 +90,30 @@ class Player:
                                         answer_wait=False)
 
     def take_item(self, item_id):
-        self.app.exchanger.send_message(messages.Message(type=messages.MessageType.CLIENT_UPDATE,
-                                                         author=self.app.exchanger.user.user_id,
-                                                         receiver="server",
-                                                         content=messages.ClientUpdate(
-                                                             command=messages.Command.take_item,
-                                                             kwargs={'item_id': item_id})
-                                                         ),
-                                        answer_wait=False)
+        return True if self.app.exchanger.send_message(
+            messages.Message(
+                type=messages.MessageType.CLIENT_UPDATE,
+                author=self.app.exchanger.user.user_id,
+                receiver="server",
+                content=messages.ClientUpdate(
+                    command=messages.Command.take_item,
+                    kwargs={'item_id': item_id}
+                                             )
+            ),
+            answer_wait=True
+        ).result == "success" else False
 
     def drop_item(self, item_id):
         if item_id is not None:
-            self.app.exchanger.send_message(messages.Message(type=messages.MessageType.CLIENT_UPDATE,
-                                                             author=self.app.exchanger.user.user_id,
-                                                             receiver="server",
-                                                             content=messages.ClientUpdate(
-                                                                 command=messages.Command.drop_item,
-                                                                 kwargs={"item_id": item_id}
-                                                             )),
-                                            answer_wait=False)
+            self.app.exchanger.send_message(
+                messages.Message(
+                    type=messages.MessageType.CLIENT_UPDATE,
+                    author=self.app.exchanger.user.user_id,
+                    receiver="server",
+                    content=messages.ClientUpdate(
+                        command=messages.Command.drop_item,
+                        kwargs={"item_id": item_id}
+                                                 )
+                ),
+                answer_wait=False
+            )

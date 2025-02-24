@@ -157,10 +157,21 @@ class GamingState(State):
             command = self.app.game.players[msg.author].__getattribute__(msg.content.command.value)
             if callable(command):
                 result = command(**msg.content.kwargs)
+                if result is not None:
+                    self.app.exchanger.answer(msg=messages.Message(type=MessageType.RESULT,
+                                                                   author="server",
+                                                                   receiver=msg.author,
+                                                                   content=ResultResponse(
+                                                                       result="success" if result else "fail")
+                                                                   )
+                                              )
         if msg.type == messages.MessageType.ADD_PLAYER_REQUEST:
             player_obj_data = self.app.game.add_player(id=msg.author)
             self.app.exchanger.answer(msg=messages.Message(type=MessageType.RESULT,
                                                            author="server",
                                                            receiver=msg.author,
                                                            content=AddPlayerResponse(obj_id=player_obj_data.id,
-                                                                                     obj_data=player_obj_data.get_dict())))
+                                                                                     obj_data=player_obj_data.get_dict()
+                                                                                     )
+                                                           )
+                                      )
